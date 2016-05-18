@@ -1,3 +1,0 @@
-﻿3032,MSTTCONTRACT MASTER,jp.co.okasan.pr.mst.mst3032.Mst3032Frame,1
-6032,MSTTCONTRACT HELPER,jp.co.okasan.pr.hlp.hlp6032.Hlp6032Frame,1
-
