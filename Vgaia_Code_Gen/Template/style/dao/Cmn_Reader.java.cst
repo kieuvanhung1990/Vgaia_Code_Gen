@@ -1,0 +1,134 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="HelpFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="PackageFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Goline Coporation" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="Package" Category="1. Context" Description="Author kage" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>	
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\\..\\include\\GolineUtilities.inc" -->
+/*
+ * Copyright(C) 2012 Okasan Information Systems Co.,Ltd. All rights reserved.
+ * 
+ */
+package jp.co.okasan.dao;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+
+import jp.co.nec.frw0100.ap.dao.*;
+
+/**
+ * <%=this.GetTablename(this.SourceTable)%>Reader Class's Description. <br>
+ *
+ * @author: <%=this.Author%> <%=this.GetCurrentDate()%> Create New
+ */
+public class <%=this.GetTablename(this.SourceTable)%>Reader
+	implements SqlConst, <%=this.GetTablename(this.SourceTable)%>Const {
+	
+	////////// Class Methods //////////
+	
+	/**
+	 * Method read data<BR>
+	 * @param resultset data to read
+	 * @return Object object data to response
+	 * @exception SQLException
+	 */
+	public static Object read(ResultSet resultset)
+		throws SQLException {
+		
+		// Create result set metadata
+		ResultSetMetaData rsmd = resultset.getMetaData();
+		// Get Column index
+		int index = 1;
+		String columnName = null;
+		columnName = rsmd.getColumnName(index);
+		
+		// Check COUNTALIAS
+		if (columnName.equals(COUNTALIAS)) {
+			return new Integer(resultset.getInt(index));
+		}
+		
+		// Declare <%=this.GetTablename(this.SourceTable)%> data
+		<%=this.GetTablename(this.SourceTable)%>Data data = new <%=this.GetTablename(this.SourceTable)%>Data();
+		
+		// Get column count
+		int columnCount = rsmd.getColumnCount();
+		
+		// GET ROWID
+		if (index <= columnCount) {
+			columnName = rsmd.getColumnName(index);
+			if (columnName.equals(ROWIDALIAS)) {
+				data.setRowId(resultset.getString(index++));
+			}
+		}
+		
+		<%foreach(ColumnSchema col in this.SourceTable.Columns){%>
+		// <%=this.GetColumnDescription(col)%>
+		if (index <= columnCount) {
+			columnName = rsmd.getColumnName(index);
+			if (columnName.equals(<%=col.Name%>)) {
+				<%if(this.ColumnIsString(col)){%>
+				String value = resultset.getString(index++);
+				if (value == null) {
+					value = "";
+				}
+				data.set<%=this.GetColumnName(col)%>(value);
+				<%}else if(this.IsNumberColumn(col)){%>
+				BigDecimal value = resultset.getBigDecimal(index++);
+				if (value == null) {
+					value = new BigDecimal("0");
+				}
+				data.set<%=this.GetColumnName(col)%>(value);
+				<%}else {%>
+				Timestamp value = resultset.getTimestamp(index++);
+				if(value !=null){
+					data.set<%=this.GetColumnName(col)%>(value);
+				}
+				<%}%>
+			}
+		}
+		
+		<%}%>
+		
+		data.resetTarget();
+		return data;
+	}
+}
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

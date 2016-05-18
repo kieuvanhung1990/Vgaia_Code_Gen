@@ -1,0 +1,109 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="FinderCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="UpdaterCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Huan.Nguyen Van" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="Package" Category="1. Context" Description="Author kage" %>
+<%@ Property Name="Prefix" Type="System.String" Default="Pkg" Category="1. Context" Description="Prefix " %>
+
+<%@ Property Name="SourceTables" Type="SchemaExplorer.TableSchemaCollection" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+	
+<%-- <%@ Property Name="this.getEntityName(table)" Type="System.String" Default="this.getEntityName(table)" Category="1. Context" Description="Name of entity" %> --%>
+<%@ Property Name="SyncClassName" Type="System.String" Default="Class Name" Category="1. Context" Description="Name of entity" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\include\GolineUtilities.inc" -->
+/*
+ * Copyright(C) 2016 Goline Corporation Co.,Ltd. All rights reserved.
+ * 
+ */
+package xeca.vn.dao.impl;
+
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import xeca.vn.dao.If<%=this.SyncClassName%>;
+
+<%foreach( SchemaExplorer.TableSchema table in this.SourceTables  ){%>
+import xeca.vn.domain.<%=this.getEntityName(table)%>;
+<%}%>
+
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+<%int index = 1; %>
+<%int count = 1;%>
+
+/**
+ * 
+ *
+ * @author: <%=Author%> <%=this.GetCurrentDate()%> Create new
+ */
+public interface If<%=this.SyncClassName%> {	
+	
+	<%foreach( SchemaExplorer.TableSchema table in this.SourceTables  ){%>
+	<%index = 1;%>
+	<%count = 1;%>
+	/**
+	 * Select data with where condition. <br>
+	 * Return null if have no data.
+	 *
+	 * @param where Where condition
+	 * @return List <%=this.getEntityName(table)%> search result
+	 * @exception SQLException have failure when search data
+	 */
+	List<<%=this.getEntityName(table)%>> find<%=this.getEntityName(table)%>(User user, <%=this.getEntityName(table)%> filter) throws SQLException;
+	
+	<%}%>
+}		
+<script runat="template">
+// My methods here.
+
+public string getEntityName(SchemaExplorer.TableSchema table){
+	string[] arr = table.Name.Split('_');
+	
+	string name = string.Empty;
+	foreach( string str in arr ){
+		name += str.Substring(0,1) + str.Remove(0,1).ToLower();
+	}
+		
+	return name;
+}
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

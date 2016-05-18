@@ -1,0 +1,189 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="FinderCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="UpdaterCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Huan.Nguyen Van" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="Package" Category="1. Context" Description="Author kage" %>
+<%@ Property Name="Prefix" Type="System.String" Default="Pkg" Category="1. Context" Description="Prefix " %>
+<%@ Property Name="EntityName" Type="System.String" Default="EntityName" Category="1. Context" Description="Name of entity" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\include\GolineUtilities.inc" -->
+<%-- /*
+ * Copyright(C) 2016 Goline Information Systems Co.,Ltd. All rights reserved.
+ * 
+ */
+package yazo.vn.dao.impl;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+
+import yazo.vn.dao.If<%=this.EntityName%>Dao;
+import yazo.vn.domain.<%=this.EntityName%>;
+import yazo.vn.domain.User; --%>
+<%int index = 1; %>
+<%int count = 1;%>
+
+<%-- /**
+ * <%=this.EntityName%>Updater class's Description <BR>
+ *
+ * @author: <%=Author%> <%=this.GetCurrentDate()%> Create new
+ */
+public class <%=this.EntityName%>Dao extends AbstractDao implements If<%=this.EntityName%>Dao { --%>
+	
+	/**
+	 * Method insert an record in to table <br>
+	 * 
+	 * @param user BaseUser current User
+	 * @param data <%=this.EntityName%>
+	 * @throws SQLException 
+	 */
+	@Override
+	public int create<%=this.EntityName%>(User user, <%=this.EntityName%> data)
+			throws SQLException {
+		<% index = 1; %>
+
+		StringBuffer sb = new StringBuffer();
+		
+		sb.append(" INSERT INTO <%=this.SourceTable.Name%>");
+		sb.append(" (");
+		<%foreach ( ColumnSchema col in SourceTable.Columns ){%>
+		sb.append(" 	<%=col.Name%> <%if(index < SourceTable.Columns.Count){%>,<%}%>");
+		<% index ++;}%>
+		sb.append(" )");<% index =1;%>
+		sb.append(" VALUES (<%foreach ( ColumnSchema col in SourceTable.Columns ){%>? <%if(index < SourceTable.Columns.Count){%>,<%}%><%index ++;}%>)");
+		
+		List<Object> param = new ArrayList<>();
+
+		<% index =1;%>
+		<%foreach ( ColumnSchema col in SourceTable.Columns ){%>
+		param.add(data.get<%=this.GetColumnName(col)%>());
+		<% index ++;}%>
+		
+		return this.updateOrInsert(sb.toString(), param.toArray());
+	}
+	
+	/**
+	 * Method update an record from table <br>
+	 * 
+	 * @param user BaseUser current User
+	 * @param data <%=this.EntityName%>
+	 * @param conn Connection
+	 * @throws SQLException 
+	 */
+	@Override
+	public int update<%=this.EntityName%>(User user, <%=this.EntityName%> data) throws SQLException{
+		<%index = 1; %>
+		<%count = 0; %>
+
+		StringBuffer sb = new StringBuffer();
+		
+		sb.append(" UPDATE <%=this.SourceTable.Name%>");
+		sb.append(" SET");
+		<%foreach ( ColumnSchema col in SourceTable.NonPrimaryKeyColumns ){ count++;%>
+		<%if(col.Name == "REG_DATE_TIME" || col.Name == "REG_USER_ID"){ continue ;}%>
+		sb.append(" 	<%=col.Name%> = ?<%if(count < SourceTable.NonPrimaryKeyColumns.Count){%>,<%}%>");
+		<% index ++;}%>
+		<% index =1;count =0;%>
+		sb.append(" WHERE");
+		<%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){%>
+		sb.append("	<%if(index > 1){%>AND<%}%> <%=col.Name%> = ? ");
+		<%index++;}%>
+		
+		String sql = sb.toString();
+		Object[] param = new Object[]{
+			<% index =1;count =0;%>
+			<%foreach ( ColumnSchema col in SourceTable.NonPrimaryKeyColumns ){%>
+			<%if(col.Name == "REG_DATE_TIME" || col.Name == "REG_USER_ID"){ continue ;}%>
+			data.get<%=this.GetColumnName(col)%>(),
+			<% index ++;}%>
+			<%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){%>
+			data.get<%=this.GetColumnName(col)%>(),
+			<% index ++;}%>
+		};
+		
+		return this.updateOrInsert(sql, param);
+	}
+	
+	<%index = 1;%>
+	<%count = 1;%>
+	/**
+	 * Select data with where condition. <br>
+	 * Return null if have no data.
+	 *
+	 * @param where Where condition
+	 * @return List <%=this.EntityName%> search result
+	 * @exception SQLException have failure when search data
+	 */
+	@Override
+	public List<<%=this.EntityName%>> find<%=this.EntityName%>(User user, <%=this.EntityName%> filter) throws SQLException {
+			
+		StringBuffer sb = new StringBuffer();
+		sb.append("SELECT ");
+		<%foreach ( ColumnSchema col in SourceTable.Columns ){%>sb.append(" t.<%=col.Name%><%if(count < SourceTable.Columns.Count){%>,<%}%>");
+		<%count ++;} %>sb.append(" FROM <%=this.SourceTable.Name%> t");
+		
+		String sql = sb.toString();
+		List<Object> param = new ArrayList<>();
+		SqlRowSet rs = jdbc.queryForRowSet(sql, param.toArray());
+
+		List<<%=this.EntityName%>> dataList = new ArrayList<<%=this.EntityName%>>();
+		<%=this.EntityName%> data = null;
+
+		while (rs.next()) {
+
+			data = new <%=this.EntityName%>();
+			
+			<%foreach( ColumnSchema col in SourceTable.Columns){%>
+			<%if(this.ColumnIsDate(col)){%>
+			data.set<%=this.GetColumnName(col)%>((Date) rs.getObject("<%=col.Name%>"));
+			<%}else{%>
+			data.set<%=this.GetColumnName(col)%>(rs.get<%=this.GetColumnDataType(col)%>("<%=col.Name%>"));
+			<%}%>
+			<%}%>
+
+			dataList.add(data);
+		}
+		
+		return dataList;
+	}
+<%-- }	 --%>	
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

@@ -1,0 +1,163 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="FinderCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="UpdaterCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Huan.Nguyen Van" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="Package" Category="1. Context" Description="Author kage" %>
+<%@ Property Name="Prefix" Type="System.String" Default="Pkg" Category="1. Context" Description="Prefix " %>
+<%@ Property Name="EntityName" Type="System.String" Default="EntityName" Category="1. Context" Description="Name of entity" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\\..\\..\\include\\GolineUtilities.inc" -->
+/*
+ * Copyright(C) 2012 Okasan Information Systems Co.,Ltd. All rights reserved.
+ */
+package jp.co.okasan.business.<%=this.Package%>.<%=this.Prefix.ToLower()%><%=this.UpdaterCode%>;
+
+import java.sql.SQLException;
+import java.sql.Timestamp;
+
+import jp.co.okasan.cmn.UserException;
+import jp.co.okasan.cmn.base.BaseContext;
+import jp.co.okasan.cmn.base.IStage;
+import jp.co.okasan.data.<%=this.EntityName%>;
+import jp.co.okasan.dao.<%=this.Package%>.<%=this.EntityName%>Updater;
+
+/**
+ * S4DataEntry class's Description. <br>
+ * 
+ * @author: <%=this.Author%> <%=this.GetCurrentDate()%> Create New
+ */
+public class S4DataEntry implements IStage {
+	
+	////////// Class Variables //////////
+	
+	/** Class name of initial stage */
+	private static final String CLASS_NAME = S4DataEntry.class.getName();
+
+	/** Method name of initial stage */
+	private static final String METHOD_NAME = "doTask";
+	
+	/** Declare data updater */
+	private <%=this.EntityName%>Updater dataUpdater;
+
+	/** Declare entry data */
+	private <%=this.EntityName%> entryData;
+	
+	////////// Class Constructor //////////
+	
+	/**
+	 * Constructor. <br>
+	 * 
+	 * @param Nothing
+	 * @exception Nothing
+	 */
+	public S4DataEntry() {
+		dataUpdater = new <%=this.EntityName%>Updater();
+		entryData = new <%=this.EntityName%>();
+	}
+	
+	////////// Class Methods //////////
+
+	/**
+	 * Process Data Entry task <br>
+	 * 
+	 * @param ctx Context the contextual of <%=this.GetTableDescription(this.SourceTable)%>
+	 * @return boolean dotask state
+	 * @exception SQLException
+	 */
+	public boolean doTask(BaseContext<?> ctx) throws SQLException,UserException {
+
+		// Get entry data
+		getEntryData(ctx);
+
+		// Entry data
+		entryData(ctx);
+
+		// Set entry data
+		setDataAfterEntry(ctx);
+
+		return true;
+	}
+	
+	/**
+	 * Get entry data <BR>
+	 * 
+	 * @param ctx
+	 *            <%=this.Prefix%><%=this.UpdaterCode%>Context
+     * @exception Nothing
+	 */
+	private void getEntryData(BaseContext<?> ctx) {
+
+		<%=this.EntityName%> inputData = ((<%=this.Prefix%><%=this.UpdaterCode%>Context)ctx).getInputData();
+		
+		<%foreach ( ColumnSchema col in SourceTable.Columns ){%>
+		entryData.set<%=this.GetColumnName(col)%>(inputData.get<%=this.GetColumnName(col)%>());
+		<%}%>
+	}
+	
+	/**
+	 * Process insert data <BR>
+	 * 
+	 * @param ctx Context the contextual of <%=this.GetTableDescription(this.SourceTable)%>
+	 * @exception SQLException
+	 */
+	private void entryData(BaseContext<?> ctx) throws SQLException,
+			UserException {
+			
+		<%=this.Prefix%><%=this.UpdaterCode%>Context context = (<%=this.Prefix%><%=this.UpdaterCode%>Context) ctx;
+		
+		// Insert into DB
+		int result = dataUpdater.insertData(context.getUser(), entryData, context.getConnection());
+		context.setUpdateResult(result);
+	}
+	
+	/**
+	 * Process data after insert record data. <br>
+	 * 
+	 * @param ctx Context the contextual of <%=this.GetTableDescription(this.SourceTable)%>
+	 * @exception Nothing
+	 */
+	private void setDataAfterEntry(BaseContext<?> ctx) {
+		// Get context
+		<%=this.Prefix%><%=this.UpdaterCode%>Context context = (<%=this.Prefix%><%=this.UpdaterCode%>Context) ctx;
+		context.setCurrentData(entryData);
+	}
+}
+
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

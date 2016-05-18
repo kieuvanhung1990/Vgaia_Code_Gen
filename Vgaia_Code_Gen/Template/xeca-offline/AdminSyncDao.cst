@@ -1,0 +1,227 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+<%@ Property Name="Author" Type="System.String" Default="Huan.Nguyen Van" Category="1. Context" Description="Author" %>
+<%@ Property Name="SourceTables" Type="SchemaExplorer.TableSchemaCollection" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+
+<!-- #include file="..\\include\\GolineUtilities.inc" -->
+	<%foreach( SchemaExplorer.TableSchema table in this.SourceTables  ){%>	
+		
+		<%int index = 1;%>
+		<%int count = 1;%>
+		
+		public void Insert<%=this.getEntityName(table)%>(UserBack user, <%=this.getEntityName(table)%> obj, OracleConnection conn)
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.Append(" INSERT INTO <%=table.Name%>");
+			sb.Append(" (");
+			<%foreach ( ColumnSchema col in table.Columns ){%>
+			sb.Append(" 	<%=col.Name%> <%if(index < table.Columns.Count){%>,<%index ++;}%>");
+			<%}%>
+			sb.Append(" )");
+			sb.Append(" VALUES");
+			sb.Append(" (");
+			<% index = 1; %>
+			<%foreach ( ColumnSchema col in table.Columns ){%>
+			sb.Append(" 	:p<%=col.Name%> <%if(index < table.Columns.Count){%>,<%index ++;}%>");
+			<%}%>
+			sb.Append(" )");
+			
+			using (OracleCommand cmd1 = DataAccessHelper.CreateCommand(sb.ToString(), conn))
+            {
+                cmd1.CommandType = System.Data.CommandType.Text;
+				<%foreach ( ColumnSchema col in table.Columns ){%>
+				<%if(col.AllowDBNull){%>
+				if(obj.<%=this.GetColumnNameParam(col)%> == null)
+				{
+					cmd1.Parameters.AddWithValue(":p<%=col.Name%>", DBNull.Value);
+				}else{
+					cmd1.Parameters.AddWithValue(":p<%=col.Name%>", obj.<%=this.GetColumnNameParam(col)%>);
+				}
+				<%}else{%>
+				cmd1.Parameters.AddWithValue(":p<%=col.Name%>", obj.<%=this.GetColumnNameParam(col)%>);
+				<%}%>
+				<%}%>
+				
+                cmd1.ExecuteNonQuery();
+            }
+		}
+		
+		public void Update<%=this.getEntityName(table)%>(UserBack user, <%=this.getEntityName(table)%> obj, OracleConnection conn)
+		{
+			<% index = 1; %>
+			<% count = 0; %>
+			StringBuilder sb = new StringBuilder();
+		
+			sb.Append(" UPDATE <%=table.Name%>");
+			sb.Append(" SET");
+			<%foreach ( ColumnSchema col in table.NonPrimaryKeyColumns ){ count++;%>
+			<%if(col.Name == "REG_DATE_TIME" || col.Name == "REG_USER_ID"){ continue ;}%>
+			sb.Append(" 	<%=col.Name%> = :p<%=col.Name%><%if(count < table.NonPrimaryKeyColumns.Count){%>,<%}%>");
+			<% index ++;}%>
+			<% index =1;count =0;%>
+			sb.Append(" WHERE");
+			<%foreach ( ColumnSchema col in table.PrimaryKey.MemberColumns ){%>
+			sb.Append("	<%if(index > 1){%>AND<%}%> <%=col.Name%> = :p<%=col.Name%> ");
+			<%index++;}%>
+			
+			using (OracleCommand cmd1 = DataAccessHelper.CreateCommand(sb.ToString(), conn))
+            {
+                cmd1.CommandType = System.Data.CommandType.Text;
+				<%foreach ( ColumnSchema col in table.NonPrimaryKeyColumns ){%>
+				<%if(col.Name == "REG_DATE_TIME" || col.Name == "REG_USER_ID"){ continue ;}%>
+				<%if(col.AllowDBNull){%>
+				if(obj.<%=this.GetColumnNameParam(col)%> == null)
+				{
+					cmd1.Parameters.AddWithValue(":p<%=col.Name%>", DBNull.Value);
+				}else{
+					cmd1.Parameters.AddWithValue(":p<%=col.Name%>", obj.<%=this.GetColumnNameParam(col)%>);
+				}
+				<%}else{%>
+				cmd1.Parameters.AddWithValue(":p<%=col.Name%>", obj.<%=this.GetColumnNameParam(col)%>);
+				<%}%>
+				<%}%>
+				<%foreach ( ColumnSchema col in table.PrimaryKey.MemberColumns ){%>
+				cmd1.Parameters.AddWithValue(":p<%=col.Name%>", obj.<%=this.GetColumnNameParam(col)%>);
+				<%}%>
+				
+                cmd1.ExecuteNonQuery();
+            }
+		}
+		
+		/**
+		* Select data with where condition. <br>
+		* Return null if have no data.
+		*
+		* @param where Where condition
+		* @return List <%=this.getEntityName(table)%> search result
+		* @exception SQLException have failure when search data
+		*/
+		public List<<%=this.getEntityName(table)%>> find<%=this.getEntityName(table)%>(UserBack user, <%=this.getEntityName(table)%> filter, OracleConnection conn) {
+				
+			List<<%= this.getEntityName(table) %>> list = new List<<%= this.getEntityName(table) %>>();
+			StringBuilder sb = new StringBuilder();
+			sb.Append("SELECT ");
+			<%foreach ( ColumnSchema col in table.Columns){%>sb.Append(" t.<%=col.Name%><%if(count < table.Columns.Count){%>,<%}%>");
+			<%count ++;} %>sb.Append(" FROM <%= table.Name%> t");
+						
+			using (OracleCommand cmd = DataAccessHelper.CreateCommand(sb.ToString(), conn))
+            {
+                using (OracleDataReader reader = cmd.ExecuteReader())
+                {
+					<%=this.getEntityName(table)%> obj = null;
+                    while (reader.Read())
+                    {
+						obj = new <%= this.getEntityName(table) %>();
+						<%count = 0;%>
+						<%foreach(ColumnSchema column in table.Columns){%>
+						obj.<%=this.GetColumnNameParam(column)%> = <%=GetStringValue(column, "reader")%><%count ++;%>
+						<%}%>
+						
+						list.Add(obj);
+					}
+				}
+			}
+				
+			return list;
+		}
+		
+	<%}%>
+
+<script runat="template">
+
+public string ReturnValueType(ColumnSchema column)
+{
+	switch (column.DataType)
+	{
+		case DbType.String:
+		case DbType.StringFixedLength:
+		case DbType.AnsiString:
+		case DbType.AnsiStringFixedLength:
+			return "string";
+			
+		case DbType.Int16:
+		case DbType.Int32:
+		case DbType.Int64:
+		case DbType.Single:
+			return "int";
+		case DbType.UInt16:
+		case DbType.UInt32:
+		case DbType.UInt64:
+		case DbType.VarNumeric:
+		case DbType.Decimal:
+		case DbType.Double:
+		case DbType.Byte:
+			return "decimal";
+		
+		case DbType.Currency:
+			return column.DataType.ToString();
+		
+		case DbType.Binary:
+			return column.DataType.ToString();
+		
+		case DbType.Boolean:	//return "bool";
+			return column.DataType.ToString();
+			
+		case DbType.Time:		// return "TimeSpan";
+		case DbType.Date:		// return "DateTime";
+		case DbType.DateTime:	// return "DateTime";
+			return "DateTime";
+		
+		case DbType.Object:		// return "object";
+			if(column.Name.ToUpper().Contains("TIME") || column.Name.ToUpper().Contains("DATE"))
+				return "DateTime";
+			return column.DataType.ToString();
+		case DbType.Guid:		// return "Guid";
+		
+		case DbType.SByte:		// return "sbyte";
+		
+		default:
+		{
+			return column.DataType.ToString();
+		}
+	}
+}
+
+
+public string getEntityName(SchemaExplorer.TableSchema table){
+	string[] arr = table.Name.Split('_');
+	
+	string name = string.Empty;
+	foreach( string str in arr ){
+		name += str.Substring(0,1) + str.Remove(0,1).ToLower();
+	}
+		
+	return name;
+}
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+
+</script>

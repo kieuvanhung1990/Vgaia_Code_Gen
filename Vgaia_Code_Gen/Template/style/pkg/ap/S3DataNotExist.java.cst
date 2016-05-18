@@ -1,0 +1,142 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="HelpFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="PackageFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Goline Coporation" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="mst" Category="1. Context" Description="Author kage" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\\..\\..\\include\\GolineUtilities.inc" -->
+/*
+ * Copyright(C) 2012 Okasan Information Systems Co.,Ltd. All rights reserved.
+ */
+package jp.co.okasan.ap.<%=Package%>.<%=Package%><%=PackageFormCode%>;
+
+import java.sql.SQLException;
+
+import jp.co.nec.com0000.ap.Com00UserError;
+import jp.co.nec.com0000.ap.Context;
+import jp.co.nec.com0000.ap.IStage;
+import jp.co.nec.frw0000.ap.Frw00InstanceFactory;
+import jp.co.nec.frw0000.cm.logging.Frw00Logger;
+
+import jp.co.okasan.cmn.ConstantValues;
+import jp.co.okasan.dao.<%=this.GetTablename(this.SourceTable)%>Data;
+import jp.co.okasan.cm.<%=Package%>.<%=Package%><%=PackageFormCode%>.<%=this.GetInputDataName(this.Package, this.PackageFormCode)%>;
+
+/**
+ * S3DataNotExist class's Description<br>
+ * 
+ * @author: <%=this.Author%> <%=this.GetCurrentDate()%> Create New
+ */
+public class S3DataNotExist implements IStage {
+	
+	////////// Class Variables //////////
+	
+	/** Class name of initial stage */
+	private static final String CLASS_NAME = S3DataNotExist.class.getName();
+	
+	/** Method name of initial stage */
+	private static final String METHOD_NAME = "doTask";
+
+	/** data finder */
+	private <%=this.GetTablename(this.SourceTable)%>Finder dataFinder;
+	
+	////////// Class Constructor //////////
+	
+	/**
+	 * Contructor. <BR>
+	 * 
+	 * @param Nothing
+	 * @exception Nothing
+	 */
+	public S3DataNotExist() {
+	}
+	
+	////////// Methods define //////////
+	
+	/**
+	 * Create business route. <br>
+	 * 
+	 * @param factory Frw00InstanceFactory instance of Factory
+	 * @exception Nothing
+	 */
+	public void create(Frw00InstanceFactory factory) {
+	
+		// Init data finder
+		dataFinder = (<%=this.GetTablename(this.SourceTable)%>Finder) factory
+				.getInstance(<%=this.GetTablename(this.SourceTable)%>Finder.class);
+	}
+	
+	/**
+	 * Process DataNotExist task <BR>
+	 * 
+	 * @param ctx Context the contextual of <%=this.GetTableDescription(this.SourceTable)%>
+	 * @return boolean status of dotask
+	 * @exception SQLException
+	 */
+	public boolean doTask(Context ctx) throws SQLException {
+		final Frw00Logger logger = ctx.getLogger();
+		logger.writeTrace(CLASS_NAME, METHOD_NAME, "enter");
+
+		// Get input data from context
+		<%=this.GetInputDataName(this.Package, this.PackageFormCode)%> inputData = ((<%=this.GetContextName(this.Package, this.PackageFormCode)%>) ctx).getInputData();
+		
+		<%int count=0;%>
+		// Find data 0
+		<%=this.GetTablename(this.SourceTable)%>Data data0 = dataFinder.findData(
+			<%foreach(ColumnSchema column in SourceTable.PrimaryKey.MemberColumns){%>inputData.get<%=this.GetColumnName(column)%>()<%count++;%><%if(count< SourceTable.PrimaryKey.MemberColumns.Count){%>, <%}%><%}%>);
+		if (data0 != null) {
+			throw new Com00UserError("MSG0012E", "<%= this.GetColumnNameParam( SourceTable.PrimaryKey.MemberColumns[0])%>");
+		}
+
+		// Find data 9
+		<%=this.GetTablename(this.SourceTable)%>Data data9 = dataFinder.findData(
+			<%foreach(ColumnSchema column in SourceTable.PrimaryKey.MemberColumns){%>
+			inputData.get<%=this.GetColumnName(column)%>(), 
+			<%}%>
+			ConstantValues.DEL);
+		if (data9 != null) {
+			throw new Com00UserError("MSG0190E", "<%= this.GetColumnNameParam( SourceTable.PrimaryKey.MemberColumns[0])%>");
+		}
+
+		logger.writeTrace(CLASS_NAME, METHOD_NAME, "exit");
+		return true;
+	}
+}
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

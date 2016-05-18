@@ -1,0 +1,175 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="FinderCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="UpdaterCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Huan.Nguyen Van" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="Package" Category="1. Context" Description="Author kage" %>
+<%@ Property Name="Prefix" Type="System.String" Default="Pkg" Category="1. Context" Description="Prefix " %>
+<%@ Property Name="EntityName" Type="System.String" Default="EntityName" Category="1. Context" Description="Name of entity" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\\..\\..\\include\\GolineUtilities.inc" -->
+/*
+ * Copyright(C) 2012 Okasan Information Systems Co.,Ltd. All rights reserved.
+ */
+package jp.co.okasan.business.<%=this.Package%>.<%=this.Prefix.ToLower()%><%=this.UpdaterCode%>;
+
+import java.sql.SQLException;
+
+import jp.co.okasan.cmn.UserException;
+import jp.co.okasan.cmn.base.BaseContext;
+import jp.co.okasan.cmn.base.IStage;
+import jp.co.okasan.data.<%=this.EntityName%>;
+import jp.co.okasan.dao.<%=this.Package%>.<%=this.EntityName%>Updater;
+
+/**
+ * S4DataDelete class's Description <br>
+ * 
+ * @author: <%=this.Author%> <%=this.GetCurrentDate()%> Create New
+ */
+public class S4DataDelete implements IStage {
+
+	////////// Class Variables //////////
+	
+	/** Class name of initial stage */
+	private static final String CLASS_NAME = S4DataDelete.class.getName();
+	
+	/** Method name of initial stage */
+	private static final String METHOD_NAME = "doTask";
+	
+	/** Data updater */
+	private <%=this.EntityName%>Updater dataUpdater;
+
+	/** Delete data */
+	private <%=this.EntityName%> deleteData;
+	
+	////////// Class Constructor //////////
+	
+	/**
+	 * Constructor. <br>
+	 * 
+	 * @param Nothing
+	 * @exception Nothing
+	 */
+	public S4DataDelete() {
+		dataUpdater = new <%=this.EntityName%>Updater();
+	}
+	
+	////////// Methods define //////////
+	
+	/**
+	 * Process DataDelete task <br>
+	 * 
+	 * @param ctx Context the contextual of <%=this.GetTableDescription(this.SourceTable)%>
+	 * @return boolean dotask state
+	 * @exception SQLException
+	 */
+	public boolean doTask(BaseContext<?> ctx) throws SQLException, UserException{
+
+		deleteData = new <%=this.EntityName%>();
+
+		// Get delete data
+		getDeleteData(ctx);
+
+		// delete data
+		deleteData(ctx);
+
+		// Set data after delete
+		setDataAfterDelete(ctx);
+
+		return true;
+	}
+	
+	/**
+	 * Get delete data <br>
+	 * 
+	 * @param ctx Context the contextual of <%=this.GetTableDescription(this.SourceTable)%>
+	 * @exception SQLException
+	 */
+	private void getDeleteData(BaseContext<?> ctx) throws SQLException , UserException {
+		// Get delete data from context
+		<%=this.Prefix%><%=this.UpdaterCode%>Context context = (<%=this.Prefix%><%=this.UpdaterCode%>Context)ctx;
+		
+		<%=this.EntityName%> inputData = context.getInputData();
+		
+		// Get old data
+		<%int count=0;%>
+		deleteData = dataUpdater.findDataForUpdate(context.getUser(), 
+			<%foreach(ColumnSchema column in SourceTable.PrimaryKey.MemberColumns){%>inputData.get<%=this.GetColumnName(column)%>()<%count++;%><%if(count < SourceTable.PrimaryKey.MemberColumns.Count){%>,<%}%><%}%>,
+			context.getConnection());
+		
+		// if null
+		if (deleteData == null) {
+			throw new UserException("MSG0011E", "<%=this.GetColumnDescription(SourceTable.PrimaryKey.MemberColumns[0])%>");
+		} 
+		
+		// Check data changed
+		
+	}
+	
+	/**
+	 * Process delete record <br>
+	 * 
+	 * @param ctx Context the contextual of <%=this.GetTableDescription(this.SourceTable)%>
+	 * @exception SQLException
+	 */
+	private void deleteData(BaseContext<?> ctx) throws SQLException , UserException{
+		// Set Del code
+		// deleteData.setDelCd(ConstantValues.DEL);
+		
+		<%=this.Prefix%><%=this.UpdaterCode%>Context context = (<%=this.Prefix%><%=this.UpdaterCode%>Context)ctx;
+
+		// Delete data
+		int result = dataUpdater.deleteData(context.getUser(), deleteData, context.getConnection());
+		context.setUpdateResult(result);
+	}
+	
+	/**
+	 * Process data after delete record <br>
+	 * 
+	 * @param ctx Context the contextual of <%=this.GetTableDescription(this.SourceTable)%>
+	 * @exception Nothing
+	 */
+	private void setDataAfterDelete(BaseContext<?> ctx) {
+		// Get context
+		<%=this.Prefix%><%=this.UpdaterCode%>Context context = (<%=this.Prefix%><%=this.UpdaterCode%>Context) ctx;
+		context.setCurrentData(deleteData);
+	}
+}
+
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

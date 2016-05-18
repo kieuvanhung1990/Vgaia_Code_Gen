@@ -1,0 +1,31 @@
+USER_ID:User ID
+PARAM_GROUP:Param Group
+PARAM_NAME:Param Name
+SCOPE:Scope
+DEL_CD:Del CD
+VALUE:Value
+REG_DATE_TIME:Reg Date Time
+REG_USER_ID:Reg User ID
+UPD_DATE_TIME:Upd Date Time
+UPD_USER_ID:Upd User ID
+COUNTRY_CD:Country CD
+MARKET_CD:Market CD
+BRANCH_CD:Branch CD
+TRANSACTION_CD:Transaction CD
+USER_ID:User ID
+LOCATION_CD:Location CD
+COMPANY_SNAME:Company Sname
+COMPANY_NAME:Company Name
+COMPANY_ADRS_1:Company Adrs 1
+COMPANY_ADRS_2:Company Adrs 2
+TEL_NO:Tel No
+FAX_NO:Fax No
+ZIP_CD:Zip CD
+EMAIL_ADRS:Email Adrs
+DEPUTY:Deputy
+HOME_PAGE:Home Page
+CUSTODIAN_MEMBER_CD:Custodian Member CD
+CUSTODIAN_ACCOUNT:Custodian Account
+REMARKS:Remarks
+MARKET_SNAME:Market Sname
+MARKET_NAME:Market Name

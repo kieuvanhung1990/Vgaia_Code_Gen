@@ -1,0 +1,471 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="True" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>
+
+<%@ Property Name="SubTables" Type="SchemaExplorer.TableSchemaCollection" Optional="True" Category="1. Context" Description="The sub table to generate from." %>
+
+<%@ Property Name="HelpFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="PackageFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Goline Coporation" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="mst" Category="1. Context" Description="Package name" %>
+
+<%@ Property Name="GeneratePath" Type="System.String" Default="C:\Goline\" Category="2. Options" Description="Path to gen" %>		
+<%@ Property Name="DeleteOldData" Type="System.Boolean" Default="false" Category="2. Options" Description="Delete Old Data.." %>	
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="3. Strings" Description="This is a sample string property." %>
+<%@ Property Name="CreateApprovement" Type="System.Boolean" Default="False" Optional="False" Category="2. Options" Description="This is a option to create approvement property." %>
+<%@ Property Name="CreateCashMovement" Type="System.Boolean" Default="False" Optional="False" Category="2. Options" Description="This is a option to create cash movement property." %>
+<%@ Property Name="CreateSecMovement" Type="System.Boolean" Default="False" Optional="False" Category="2. Options" Description="This is a option to create approvement property." %>
+<%@ Property Name="UseMultiTabs" Type="System.Boolean" Default="False" Optional="False" Category="2. Options" Description="This is a option to create multi tab." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%@ Assembly Name="ReportControl" Path="..\lib"%>
+
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<%@ Import Namespace="System.Text" %>
+<%@ Import Namespace="System.Collections.Generic" %>
+
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="ReportControl" %>
+<!-- #include file="..\\include\\GolineUtilities.inc" -->
+<% Workbook book = new Workbook();%>
+<% book.Load("mytemplate.xml");%>
+<% int index = 1; int rowindex = 4; %>
+<%-- Sheet Outline --%>
+<% Worksheet s0 = book.Worksheets[0];%>
+<% s0.Table.Rows[rowindex].Cells[0].Data.Text = this.SourceTable.Name;%>
+<% s0.Table.Rows[rowindex].Cells[1].Data.Text = "Write/Read";%>
+<% s0.Table.Rows[rowindex].Cells[2].Data.Text = this.GetTableDescription(this.SourceTable);%>
+<% rowindex ++; %>
+<% if(this.CreateApprovement){%>
+	<% s0.Table.Rows[rowindex].Cells[0].Data.Text = "CORTAPPROVEMENT";%>
+	<% s0.Table.Rows[rowindex].Cells[1].Data.Text = "Write/Read";%>
+	<% s0.Table.Rows[rowindex].Cells[2].Data.Text = "Create/Approve/Cancel CORTAPPROVEMENT";%>
+	<% rowindex ++; %>
+<% }%>
+<% if(this.CreateCashMovement){%>
+	<% s0.Table.Rows[rowindex].Cells[0].Data.Text = "CORTCASH_MOVEMENT";%>
+	<% s0.Table.Rows[rowindex].Cells[1].Data.Text = "Write/Read";%>
+	<% s0.Table.Rows[rowindex].Cells[2].Data.Text = "Create/Approve/Cancel CORTCASH_MOVEMENT";%>
+	<% rowindex ++; %>
+	<% s0.Table.Rows[rowindex].Cells[0].Data.Text = "CORTCASH_SUMMARY_TODAY";%>
+	<% s0.Table.Rows[rowindex].Cells[1].Data.Text = "Write/Read";%>
+	<% s0.Table.Rows[rowindex].Cells[2].Data.Text = "Create/Approve/Cancel CORTCASH_SUMMARY_TODAY";%>
+	<% rowindex ++; %>
+<%}%>
+	<% if(this.CreateSecMovement){%>
+	<% s0.Table.Rows[rowindex].Cells[0].Data.Text = "CORTSEC_MOVEMENT";%>
+	<% s0.Table.Rows[rowindex].Cells[1].Data.Text = "Write/Read";%>
+	<% s0.Table.Rows[rowindex].Cells[2].Data.Text = "Create/Approve/Cancel CORTSEC_MOVEMENT";%>
+	<% rowindex ++; %>
+<%}%>
+<%foreach( ColumnSchema col in SourceTable.Columns){%>
+	<%if(col.Name=="CUST_CD"){%>
+		<% s0.Table.Rows[rowindex].Cells[0].Data.Text = "CORTCUSTOMER";%>
+		<% s0.Table.Rows[rowindex].Cells[1].Data.Text = "Read";%>
+		<% s0.Table.Rows[rowindex].Cells[2].Data.Text = "Read Customer from table CORTCUSTOMER";%>
+		<% rowindex ++; %>
+	<%}else if(col.Name=="SEC_CD"){%>
+		<% s0.Table.Rows[rowindex].Cells[0].Data.Text = "MSTTSECURITIES";%>
+		<% s0.Table.Rows[rowindex].Cells[1].Data.Text = "Read";%>
+		<% s0.Table.Rows[rowindex].Cells[2].Data.Text = "Read Securities Info from table MSTTSECURITIES";%>
+		<% rowindex ++; %>
+	<%}else if(col.Name=="MARKET_CD"){%>
+		<% s0.Table.Rows[rowindex].Cells[0].Data.Text = "MSTTMARKET";%>
+		<% s0.Table.Rows[rowindex].Cells[1].Data.Text = "Read";%>
+		<% s0.Table.Rows[rowindex].Cells[2].Data.Text = "Read Securities Info from table MSTTMARKET";%>
+		<% rowindex ++; %>
+	<%}else if(col.Name=="UTIL_CD"){%>
+		<% s0.Table.Rows[rowindex].Cells[0].Data.Text = "MSTTUTILITY";%>
+		<% s0.Table.Rows[rowindex].Cells[1].Data.Text = "Read";%>
+		<% s0.Table.Rows[rowindex].Cells[2].Data.Text = "Read Utility Info from table MSTTUTILITY";%>
+		<% rowindex ++; %>
+	<%}else if(col.Name=="COUNTRY_CD"){%>
+		<% s0.Table.Rows[rowindex].Cells[0].Data.Text = "MSTTCOUNTRY";%>
+		<% s0.Table.Rows[rowindex].Cells[1].Data.Text = "Read";%>
+		<% s0.Table.Rows[rowindex].Cells[2].Data.Text = "Read Country Info from table MSTTCOUNTRY";%>
+		<% rowindex ++; %>
+	<%}%>
+<%}%>
+<%-- Screen Layout --%>
+
+
+<%-- Sheet Answer Layout --%>
+<% rowindex = 2; %>
+<% Worksheet s3 = book.Worksheets[3];%>
+<% s3.Table.Rows[rowindex].Cells[0].Data.Text = "*** " + this.SourceTable.Name + " ANSWER SCREEN ***";%>
+<% rowindex = rowindex + 3; %>
+<% s3.Table.Rows[rowindex].Cells[0].Data.Text = "Action Mode";%>
+<% s3.Table.Rows[rowindex].Cells[0].MergeAcross = 14;%>
+<% s3.Table.Rows[rowindex].Cells[1].Data.Text = "Entry";%>
+<% s3.Table.Rows[rowindex].Cells[1].MergeAcross = 29;%>
+<% rowindex ++; %>
+<% WorksheetRow t3 = s3.Table.Rows[rowindex];%>
+<%foreach( ColumnSchema col in SourceTable.Columns){%>
+	<% WorksheetRow r3 = this.createRow(t3);%>
+	<%if(col.Name == this.SourceTable.PrimaryKey.MemberColumns[ this.SourceTable.PrimaryKey.MemberColumns.Count-1].Name){%>
+		<% r3 = this.createRow(t3);%>
+		<% r3.Cells[0].MergeAcross = 14;%>
+		<% r3.Cells[1].MergeAcross = 29;%>
+		<% s3.Table.Rows.Insert(rowindex, r3);%>
+		<% rowindex ++; %>
+	<%}%>
+	<% if(col.Name=="REG_DATE_TIME"|| col.Name=="REG_USER_ID" || col.Name=="UPD_DATE_TIME" || col.Name=="UPD_USER_ID"){continue;}%>
+	<% r3 = this.createRow(t3);%>
+	<% r3.Cells[0].Data.Text=this.GetColumnDescription(col);%>
+	<% r3.Cells[0].MergeAcross = 14;%>
+	<% r3.Cells[1].Data.Text="XXXXXX";%>
+	<% r3.Cells[1].MergeAcross = 29;%>
+	<% s3.Table.Rows.Insert(rowindex, r3);%>
+	<% rowindex ++; %>
+<%}%>
+<% WorksheetRow r31 = this.createRow(t3);%>
+<% r31.Cells[0].MergeAcross = 14;%>
+<% r31.Cells[1].MergeAcross = 29;%>
+<% s3.Table.Rows.Insert(rowindex, r31);%>
+<% rowindex ++; %>
+<% r31 = this.createRow(t3);%>
+<% r31.Cells[0].Data.Text="Registed";%>
+<% r31.Cells[0].MergeAcross = 14;%>
+<% r31.Cells[1].Data.Text= DateTime.Now.ToString("MM/dd/yy HH:ss		") + this.Author;%>
+<% r31.Cells[1].MergeAcross = 29;%>
+<% s3.Table.Rows.Insert(rowindex, r31);%>
+<% rowindex ++; %>
+<% r31 = this.createRow(t3);%>
+<% r31.Cells[0].Data.Text="Updated";%>
+<% r31.Cells[0].MergeAcross = 14;%>
+<% r31.Cells[1].Data.Text= DateTime.Now.ToString("MM/dd/yy HH:ss		") + this.Author;%>
+<% r31.Cells[1].MergeAcross = 29;%>
+<% s3.Table.Rows.Insert(rowindex, r31);%>
+<% rowindex ++; %>	
+<%-- Sheet Screen Spec --%>
+<% index = 1; rowindex = 3; %>
+<% Worksheet s4 = book.Worksheets[4];%>
+<% WorksheetRow template = s4.Table.Rows[rowindex];%>
+<% WorksheetRow row = createRow(template);%>
+<% row.Cells[0].Data.Text = index.ToString();%>
+<% row.Cells[0].Data.Type = DataType.Number;%>
+<% row.Cells[1].Data.Text = "ActionMode";%>
+<% row.Cells[2].Data.Text = "cboActionMode";%>
+<% row.Cells[3].Data.Text = "MUIActionModeComboBox";%>
+<% row.Cells[4].Data.Text = "1";%>
+<% row.Cells[4].Data.Type = DataType.Number;%>
+<% row.Cells[6].Data.Text = "T";%>
+<% row.Cells[7].Data.Text = "1:Entry";%>
+<% row.Cells[8].Data.Text = "LEFT";%>
+<% row.Cells[11].Data.Text = "1:Entry, 2:Update, 3:Delete";%>
+<% s4.Table.Rows.Insert(rowindex, row);%>
+<% index++; rowindex++;%>
+<%foreach( ColumnSchema col in SourceTable.Columns){%>
+	<% row = createRow(template);%>
+	<% row.Cells[0].Data.Text = index.ToString();%>
+	<% row.Cells[0].Data.Type = DataType.Number;%>
+	<% row.Cells[1].Data.Text = this.GetColumnName(col);%>
+	<%if(col.Name == "DEL_CD" || col.Name == "REG_DATE_TIME" || col.Name == "REG_USER_ID" || col.Name == "UPD_DATE_TIME" || col.Name == "UPD_USER_ID") {%>
+		<% row.Cells[2].Data.Text = "lbl" + this.GetColumnName(col);%>
+		<% row.Cells[3].Data.Text = "MUIShowLabel";%>
+		<% row.Cells[8].Data.Text = "LEFT";%>
+	<%}else if(col.Name.Contains("STATUS") || col.Name.Contains("TYPE")){%>
+		<% row.Cells[2].Data.Text = "cbo" + this.GetColumnName(col);%>
+		<% row.Cells[3].Data.Text = "MUIComboBox";%>
+		<% row.Cells[8].Data.Text = "LEFT";%>
+	<%}else if (col.Name.Contains("DATE")){%>
+		<% row.Cells[2].Data.Text = "txt" + this.GetColumnName(col);%>
+		<% row.Cells[3].Data.Text = "UIDateYMDTextField2";%>
+		<% row.Cells[8].Data.Text = "LEFT";%>
+	<%}else if(this.ColumnIsDecimal(col)){%>
+		<% row.Cells[2].Data.Text = "txt" + this.GetColumnName(col);%>
+		<% row.Cells[3].Data.Text = "MUINumberTextField";%>
+		<% row.Cells[8].Data.Text = "RIGHT";%>
+	<%}else{%>
+		<% row.Cells[2].Data.Text = "txt" + this.GetColumnName(col);%>
+		<% row.Cells[3].Data.Text = "MUIHalfWidthANTextField";%>
+		<% row.Cells[8].Data.Text = "LEFT";%>
+	<%}%>
+	<% if(this.ColumnIsString(col)){%>
+		<% row.Cells[4].Data.Text = col.Size.ToString();%>
+		<% row.Cells[4].Data.Type = DataType.String;%>
+	<% }%>
+	<% if(!col.AllowDBNull){%>
+		<% row.Cells[6].Data.Text = "T";%>
+	<%}%>
+	<% row.Cells[10].Data.Text = col.Name;%>
+	<% s4.Table.Rows.Insert(rowindex, row);%>
+	<% index++; rowindex++;%>
+<%}%>
+<% index = 1; rowindex = rowindex + 5; %>
+<%foreach( ColumnSchema col in SourceTable.Columns){%>
+	<% row = createRow(template);%>
+	<% row.Cells[0].Data.Text = index.ToString();%>
+	<% row.Cells[0].Data.Type = DataType.Number;%>
+	<% row.Cells[1].Data.Text = this.GetColumnName(col);%>
+	<%if(col.Name == "DEL_CD" || col.Name == "REG_DATE_TIME" || col.Name == "REG_USER_ID" || col.Name == "UPD_DATE_TIME" || col.Name == "UPD_USER_ID") {%>
+		<% row.Cells[2].Data.Text = "lbl" + this.GetColumnName(col);%>
+		<% row.Cells[3].Data.Text = "MUIShowLabel";%>
+		<% row.Cells[8].Data.Text = "LEFT";%>
+	<%}else if(col.Name.Contains("STATUS") || col.Name.Contains("TYPE")){%>
+		<% row.Cells[2].Data.Text = "cbo" + this.GetColumnName(col);%>
+		<% row.Cells[3].Data.Text = "MUIComboBox";%>
+		<% row.Cells[8].Data.Text = "LEFT";%>
+	<%}else if (col.Name.Contains("DATE")){%>
+		<% row.Cells[2].Data.Text = "txt" + this.GetColumnName(col);%>
+		<% row.Cells[3].Data.Text = "UIDateYMDTextField2";%>
+		<% row.Cells[8].Data.Text = "LEFT";%>
+	<%}else if(this.ColumnIsDecimal(col)){%>
+		<% row.Cells[2].Data.Text = "txt" + this.GetColumnName(col);%>
+		<% row.Cells[3].Data.Text = "MUINumberTextField";%>
+		<% row.Cells[8].Data.Text = "RIGHT";%>
+	<%}else{%>
+		<% row.Cells[2].Data.Text = "txt" + this.GetColumnName(col);%>
+		<% row.Cells[3].Data.Text = "MUIHalfWidthANTextField";%>
+		<% row.Cells[8].Data.Text = "LEFT";%>
+	<%}%>
+	<% s4.Table.Rows.Insert(rowindex, row);%>
+	<% index++; rowindex++;%>
+<%}%>
+<% row = createRow(template);%>
+<% row.Cells[0].Data.Text = index.ToString();%>
+<% row.Cells[0].Data.Type = DataType.Number;%>
+<% row.Cells[1].Data.Text = "DataList";%>
+<% row.Cells[2].Data.Text = "tblDataList";%>
+<% row.Cells[3].Data.Text = "UITable2";%>
+<% s4.Table.Rows.Insert(rowindex, row);%>
+<% index++; rowindex++;%>
+<% int colindex = 0;%>
+<%foreach( ColumnSchema col in SourceTable.Columns){%>
+	<% row = createRow(template);%>
+	<% row.Cells[0].Data.Text = index.ToString();%>
+	<% row.Cells[0].Data.Type = DataType.Number;%>
+	<% row.Cells[1].Data.Text = this.GetColumnName(col);%>
+	<% row.Cells[2].Data.Text = "column" + colindex.ToString();%>
+	<% row.Cells[3].Data.Text = "UITableColumn";%>
+	<%if(col.Name == "DEL_CD" || col.Name == "REG_DATE_TIME" || col.Name == "REG_USER_ID" || col.Name == "UPD_DATE_TIME" || col.Name == "UPD_USER_ID") {%>
+		<% row.Cells[8].Data.Text = "LEFT";%>
+	<%}else if(col.Name.Contains("STATUS") || col.Name.Contains("TYPE")){%>
+		<% row.Cells[8].Data.Text = "LEFT";%>
+	<%}else if (col.Name.Contains("DATE")){%>
+		<% row.Cells[8].Data.Text = "LEFT";%>
+	<%}else if(this.ColumnIsDecimal(col)){%>
+		<% row.Cells[8].Data.Text = "RIGHT";%>
+	<%}else{%>
+		<% row.Cells[8].Data.Text = "LEFT";%>
+	<%}%>
+	<% row.Cells[10].Data.Text = col.Name;%>
+	<% s4.Table.Rows.Insert(rowindex, row);%>
+	<% index++; rowindex++;colindex ++;%>
+<%}%>
+<%-- Output Spec --%>
+<% index = 1; rowindex = 1; %>
+<% Worksheet s5 = book.Worksheets[5];%>
+<% s5.Table.Rows[rowindex].Cells[1].Data.Text = this.SourceTable.Name;%>
+<% string str = string.Empty;%>
+<%foreach( ColumnSchema col in this.SourceTable.PrimaryKey.MemberColumns){%>
+	<% str += col.Name + ", ";%>
+	<%if(col.Name == this.SourceTable.PrimaryKey.MemberColumns[ this.SourceTable.PrimaryKey.MemberColumns.Count-1].Name){%>
+		<% str = str.Remove(str.Length-2);%>
+	<%}%>
+<%}%>
+<% s5.Table.Rows[rowindex].Cells[3].Data.Text = string.Format(s5.Table.Rows[rowindex].Cells[3].Data.Text, this.SourceTable.Name, str);%>
+<% rowindex++;%>
+<% WorksheetRow t5 = s5.Table.Rows[rowindex];%>
+<% WorksheetRow r5 = null;%>
+<%foreach( ColumnSchema col in SourceTable.Columns){%>
+	<% r5 = createRow(t5);%>
+	<% r5.Cells[0].Data.Text=index.ToString();%>
+	<% r5.Cells[0].Data.Type = DataType.Number;%>
+	<% r5.Cells[1].Data.Text=this.SourceTable.Name;%>
+	<% r5.Cells[2].Data.Text=col.Name;%>
+	<% if (col.Name == "UPD_USER_ID"){%>
+		<% r5.Cells[3].Data.Text="Get current User updated";%>
+	<%}else if (col.Name == "REG_USER_ID"){%>
+		<% r5.Cells[3].Data.Text="Get current User registed";%>
+	<%}else if (col.Name == "REG_DATE_TIME" || col.Name == "UPD_DATE_TIME"){%>
+		<% r5.Cells[3].Data.Text="Get current time from server";%>
+	<%}else {%>
+		<% r5.Cells[3].Data.Text="Get from screen";%>
+	<%}%>
+	<% s5.Table.Rows.Insert(rowindex, r5);%>
+	<% index++; rowindex++;%>
+<%}%>
+<% index = 1; rowindex ++;%>
+<% if(this.CreateApprovement){%>
+	<% s5.Table.Rows[rowindex].Cells[3].Data.Text = string.Format(s5.Table.Rows[rowindex].Cells[3].Data.Text, this.SourceTable.Name);%>
+<% }else{%>
+	<% s5.Table.Rows[rowindex].Cells[3].Data.Text = "";%>
+<%}%>
+<% rowindex ++;%>
+<%for( int i =0; i< 19; i++){%>
+	<% if(this.CreateApprovement){%>
+		<% rowindex ++;%>
+		<% if (!string.IsNullOrEmpty(s5.Table.Rows[rowindex].Cells[3].Data.Text)){%>
+			<% s5.Table.Rows[rowindex].Cells[3].Data.Text = s5.Table.Rows[rowindex].Cells[3].Data.Text.Replace("{0}", this.SourceTable.Name);%>
+		<%}%>
+	<% }else{%>
+		<% s5.Table.Rows.RemoveAt(rowindex);%>
+	<%}%>
+<%}%>
+<% index = 1; rowindex = rowindex+3;%>
+<% if(!this.CreateCashMovement){%>
+	<% s5.Table.Rows[rowindex].Cells[3].Data.Text = "";%>
+<% }%>
+<% rowindex = rowindex + 1;%>
+<%for( int i =0; i< 25; i++){%>
+	<% if(this.CreateCashMovement){%>
+		<% rowindex ++;%>
+		<% if (!string.IsNullOrEmpty(s5.Table.Rows[rowindex].Cells[3].Data.Text)){%>
+			<% s5.Table.Rows[rowindex].Cells[3].Data.Text = s5.Table.Rows[rowindex].Cells[3].Data.Text.Replace("{0}", this.SourceTable.Name);%>
+		<%}%>
+	<%} else{%>
+		<% s5.Table.Rows.RemoveAt(rowindex);%>
+	<%}%>
+<%}%>
+<% index = 1; rowindex = rowindex+1;%>
+<% if(!this.CreateSecMovement){%>
+	<% s5.Table.Rows[rowindex].Cells[3].Data.Text = "";%>
+<% }%>
+<% rowindex = rowindex + 1;%>
+<%for( int i =0; i< 26; i++){%>
+	<% if(this.CreateSecMovement){%>
+		<% rowindex ++;%>
+		<% if (!string.IsNullOrEmpty(s5.Table.Rows[rowindex].Cells[3].Data.Text)){%>
+			<% s5.Table.Rows[rowindex].Cells[3].Data.Text = s5.Table.Rows[rowindex].Cells[3].Data.Text.Replace("{0}", this.SourceTable.Name);%>
+		<%}%>
+	<% }else{%>
+		<% s5.Table.Rows.RemoveAt(rowindex);%>
+	<%}%>
+<%}%>
+<%-- Item Vaildate --%>
+<% index = 1; rowindex = 2; %>
+<% Worksheet s6 = book.Worksheets[6];%>
+<% WorksheetRow t6 = s6.Table.Rows[rowindex];%>
+<% WorksheetRow r6 = null;%>
+<%foreach( ColumnSchema col in SourceTable.Columns){%>
+	<% r6 = this.createRow(t6);%>
+	<% r6.Cells[0].Data.Text=index.ToString();%>
+	<% r6.Cells[0].Data.Type = DataType.Number;%>
+	<% r6.Cells[1].Data.Text = this.GetColumnName(col);%>
+	<% if(!col.AllowDBNull){%>
+		<% r6.Cells[2].Data.Text = "T";%>
+	<% }%>
+	<% if(this.ColumnIsString(col)){%>
+		<% r6.Cells[3].Data.Text = "String";%>
+		<% r6.Cells[4].Data.Text = col.Size.ToString();%>
+		<% r6.Cells[4].Data.Type = DataType.Number;%>
+		<% r6.Cells[6].Data.Text = "Check length of string";%>
+		<% r6.Cells[8].Data.Text = "Use ItemValidator.checkValue";%>
+	<% }else if(this.ColumnIsDate(col)){%>
+		<% r6.Cells[3].Data.Text = "Date";%>
+	<% }else if(this.ColumnIsDecimal(col)){%>
+		<% r6.Cells[3].Data.Text = "Number";%>
+		<% if(col.Name.Contains("DATE")){%>
+			<% r6.Cells[4].Data.Text = "8";%>
+			<% r6.Cells[4].Data.Type = DataType.Number;%>
+			<% r6.Cells[6].Data.Text = "Check date";%>
+			<% r6.Cells[8].Data.Text = "Use ItemValidator.checkDate";%>
+		<% }else{%>
+			<% r6.Cells[6].Data.Text = "Check number";%>
+			<% r6.Cells[8].Data.Text = "Use ItemValidator.checkValue";%>
+		<% }%>
+	<% }%>
+	<% s6.Table.Rows.Insert(rowindex, r6);%>
+	<% index++; rowindex++;%>
+<%}%>
+<%-- BusinessValidate --%>
+<% index = 1; rowindex = 2; %>
+<% Worksheet s9 = book.Worksheets[9];%>
+<% WorksheetRow t9 = s9.Table.Rows[rowindex];%>
+<% WorksheetRow r9 = null;%>
+<%foreach( ColumnSchema col in SourceTable.Columns){%>
+	<%bool insert = false;%>
+	<% r9 = this.createRow(t9);%>
+	<% r9.Cells[0].Data.Text=index.ToString();%>
+	<% r9.Cells[0].Data.Type = DataType.Number;%>
+	<% r9.Cells[1].Data.Text = "S3TableReadCheck";%>
+	<% r9.Cells[2].Data.Text = col.Name;%>
+	<% if(col.Name == "CUST_CD"){%>
+		<% r9.Cells[3].Data.Text = "CORTCUSTOMER";%>
+		<% r9.Cells[4].Data.Text = "Exists or error";%>
+		<%insert = true;%>
+	<% }else if(col.Name == "SEC_CD"){%>
+		<% r9.Cells[3].Data.Text = "MSTSECURITIES";%>
+		<% r9.Cells[4].Data.Text = "Exists or error";%>
+		<%insert = true;%>
+	<% }else if(col.Name == "MARKET_CD"){%>
+		<% r9.Cells[3].Data.Text = "MSTTMARKET";%>
+		<% r9.Cells[4].Data.Text = "Exists or error";%>
+		<%insert = true;%>
+	<% }else if(col.Name == "TRANSACTION_CD"){%>
+		<% r9.Cells[3].Data.Text = "MSTTBRANCH";%>
+		<% r9.Cells[4].Data.Text = "Exists or error";%>
+		<%insert = true;%>
+	<% }else if(col.Name == "CUSTODIAN_CD"){%>
+		<% r9.Cells[3].Data.Text = "MSTTCUSTODIAN";%>
+		<% r9.Cells[4].Data.Text = "Exists or error";%>
+		<%insert = true;%>
+	<%}%>
+
+	<% if(insert){%>
+		<% s9.Table.Rows.Insert(rowindex, r9);%>
+		<% index++; rowindex++;%>
+	<%}%>
+			
+<%}%>
+
+<%
+string categoryDir = string.Format(@"{0}\{1}\master\", this.GeneratePath, this.GetTablename(this.SourceTable));
+if (!Directory.Exists(categoryDir))
+	{
+		Directory.CreateDirectory(categoryDir);
+	}
+string path = categoryDir + this.SourceTable.Name.ToLower() + ".xls";
+if(File.Exists(path)){
+	File.Delete(path);
+}
+StreamWriter sw = new StreamWriter(path, true);
+sw.Write(book.Save());
+sw.Close();
+%>
+
+done!
+				
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+
+private WorksheetRow createRow(WorksheetRow template){
+	WorksheetRow row = new WorksheetRow(template);
+	foreach (WorksheetCell cell in template.Cells)
+	{
+		row.Cells.Add(cell.Data.Text, cell.Data.Type, cell.StyleID);
+	}
+
+	return row;
+}
+
+</script>

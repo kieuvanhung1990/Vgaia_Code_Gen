@@ -1,0 +1,83 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="HelpFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="PackageFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+
+<%@ Property Name="Author" Type="System.String" Default="Goline Coporation" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="mst" Category="1. Context" Description="Author kage" %>
+<%@ Property Name="Key" Type="System.String" Default="Key colmn" Category="1. Context" Description="Author kage" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\\include\\GolineUtilities.inc" -->
+-- REGISTER TABLE <%=SourceTable.Name%>
+INSERT INTO "FRWT03TBLBLK" (TABLE_ID, TABLE_NAME, BLOCKADE_FLAG) VALUES ('<%=SourceTable.Name%>', '<%=SourceTable.Name%>', '0');
+COMMIT;
+
+-- INSRET FRWT00CTRLBLK
+INSERT INTO "FRWT00CTRLBLK" (CONTROL_ID, CONTROL_NAME, BLOCKADE_FLAG, CONTROL_GROUP_CODE) VALUES ('Hlp<%=this.HelpFormCode%>Control', 'Hlp<%=this.HelpFormCode%>Control', '0', 'HLP');
+COMMIT;
+
+-- INSERT FRWT01CTRLGRPBLK
+INSERT INTO "FRWT01CTRLGRPBLK" (CONTROL_GROUP_CODE, CONTROL_GROUP_NAME, BLOCKADE_FLAG, OPERATION_TYPE, START_TIME, END_TIME) VALUES ('HLP', 'Help', '0', '0', '000000', '000000');
+COMMIT;
+
+-- INSRET FRWT00CTRLBLK
+INSERT INTO "FRWT00CTRLBLK" (CONTROL_ID, CONTROL_NAME, BLOCKADE_FLAG, CONTROL_GROUP_CODE) VALUES ('<%=this.GetControlName(Package, this.PackageFormCode)%>', '<%=this.GetControlName(Package, this.PackageFormCode)%>', '0', '<%=this.Package.ToUpper()%>');
+COMMIT;
+
+-- INSERT FRWT01CTRLGRPBLK
+INSERT INTO FRWT01CTRLGRPBLK (CONTROL_GROUP_CODE, CONTROL_GROUP_NAME, BLOCKADE_FLAG, OPERATION_TYPE, START_TIME, END_TIME) VALUES ('<%=this.Package.ToUpper()%>', '<%=this.Package.ToUpper()%>', '0', '0', '000000', '000000');
+COMMIT;
+
+-- Registration report Help form
+INSERT INTO "CMNT02REPORT_ID_REGISTRATION" (REPORT_ID, DEL_CD, GROUP_CATEGORY, REPORT_TYPE, REPORT_NUMBER, SCREEN_ID, REPORT_NO, REMARKS1, REG_DATE_TIME, REG_USER_ID, UPD_DATE_TIME, UPD_USER_ID) VALUES ('HLPR0<%=this.HelpFormCode%>', '0', 'HLP', 'R', '<%=this.HelpFormCode%>', '<%=this.HelpFormCode%>', '99', '<%=this.SourceTable.Name%>', SYSDATE, '<%=this.SourceTable.Name%>', SYSDATE, '<%=this.SourceTable.Name%>');
+COMMIT;
+
+INSERT INTO "INFT1CREPATRB" (ONLINE_REPORT_ATTRIBUTE_ID, LOGICAL_VD_CODE, TITLE, AUTO_PRINT_CC, COLOR_CC, BEEP_CC) VALUES ('HLPR0<%=this.HelpFormCode%>', 'A', '<%=this.SourceTable.Name%>', '0', '0', '1');
+COMMIT;
+
+-- Registration report
+INSERT INTO "CMNT02REPORT_ID_REGISTRATION" (REPORT_ID, DEL_CD, GROUP_CATEGORY, REPORT_TYPE, REPORT_NUMBER, SCREEN_ID, REPORT_NO, REMARKS1, REG_DATE_TIME, REG_USER_ID, UPD_DATE_TIME, UPD_USER_ID) VALUES ('<%=this.Package.ToUpper()%>R0<%=this.PackageFormCode%>', '0', 'MST', 'R', '<%=this.PackageFormCode%>', '<%=this.PackageFormCode%>', '99', '<%=this.SourceTable.Name%>', SYSDATE, '<%=this.SourceTable.Name%>', SYSDATE, '<%=this.SourceTable.Name%>');
+COMMIT;
+
+INSERT INTO "INFT1CREPATRB" (ONLINE_REPORT_ATTRIBUTE_ID, LOGICAL_VD_CODE, TITLE, AUTO_PRINT_CC, COLOR_CC, BEEP_CC) VALUES ('<%=this.Package.ToUpper()%>R0<%=this.PackageFormCode%>', 'A', '<%=this.SourceTable.Name%>', '0', '0', '1');
+COMMIT;
+
+
+
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

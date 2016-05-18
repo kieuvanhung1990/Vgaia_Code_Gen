@@ -1,0 +1,155 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+<%@ Property Name="Author" Type="System.String" Default="Huan.Nguyen Van" Category="1. Context" Description="Author" %>
+<%@ Property Name="TargetPrefix" Type="System.String" Default="" Category="1. Context" Description="Prefix " %>
+
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+
+<!-- #include file="..\\include\\GolineUtilities.inc" -->
+//-----------------------------------------------------------------------
+// <Copyright file="<%= ReturnObjectName() %>.cs" company="Goline Corporation">
+//     Copyright (c) Goline Corporation. All rights reserved.
+// </copyright>
+// <author><%= Author%></author>
+//-----------------------------------------------------------------------
+namespace MHBSConverter.Components.vgaia
+{
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Runtime.Serialization;
+	using System.Text;
+	
+	/// <summary>
+    /// This is <%= ReturnObjectName() %> class
+    /// </summary>
+	public class <%=this.ReturnObjectName()%>{
+		
+		/// <summary>
+        /// Initializes a new instance of the <%= ReturnObjectName() %> class
+        /// </summary>
+	  	public <%= ReturnObjectName() %>()
+        {
+        }
+		
+		<% GenerateColumns(); %>
+	}
+}
+
+<script runat="template">
+
+public string ReturnValueType(ColumnSchema column)
+{
+	switch (column.DataType)
+	{
+		case DbType.String:
+		case DbType.StringFixedLength:
+		case DbType.AnsiString:
+		case DbType.AnsiStringFixedLength:
+			return "string";
+			
+		case DbType.Int16:
+		case DbType.Int32:
+		case DbType.Int64:
+		case DbType.Single:
+			return "int";
+		case DbType.UInt16:
+		case DbType.UInt32:
+		case DbType.UInt64:
+		case DbType.VarNumeric:
+		case DbType.Decimal:
+		case DbType.Double:
+		case DbType.Byte:
+			return "decimal";
+		
+		case DbType.Currency:
+			return column.DataType.ToString();
+		
+		case DbType.Binary:
+			return column.DataType.ToString();
+		
+		case DbType.Boolean:	//return "bool";
+			return column.DataType.ToString();
+			
+		case DbType.Time:		// return "TimeSpan";
+		case DbType.Date:		// return "DateTime";
+		case DbType.DateTime:	// return "DateTime";
+			return "DateTime";
+		
+		case DbType.Object:		// return "object";
+			if(column.Name.ToUpper().Contains("TIME") || column.Name.ToUpper().Contains("DATE"))
+				return "DateTime";
+			return column.DataType.ToString();
+		case DbType.Guid:		// return "Guid";
+		
+		case DbType.SByte:		// return "sbyte";
+		
+		default:
+		{
+			return column.DataType.ToString();
+		}
+	}
+}
+
+// My methods here.
+public void GenerateColumns()
+{
+	ColumnSchemaCollection GeneColumns =  new ColumnSchemaCollection(SourceTable.Columns);
+	//ColumnSchemaCollection filteredColumns = FilterExcludedColumns(columns);
+	int p = 0;
+	for (int i = 0; i < GeneColumns.Count; i++)
+	{
+		
+		Response.WriteLine("\t\t/// <summary>");
+        Response.WriteLine("\t\t/// Gets or sets {0} field", this.GetColumnName(GeneColumns[i]));
+        Response.WriteLine("\t\t/// </summary>");
+		Response.WriteLine("\t\tpublic " + ReturnValueType(GeneColumns[i]) + " " + this.GetColumnName(GeneColumns[i]) + " { get; set; }");
+		Response.WriteLine("");
+		p++;
+		
+		if (GeneColumns[i].NativeType == "tinyint")
+		{
+			Response.WriteLine("\t\t/// <summary>");
+        	Response.WriteLine("\t\t/// Gets or sets {0} field", this.GetColumnName(GeneColumns[i]));
+        	Response.WriteLine("\t\t/// </summary>");
+			Response.WriteLine("\t\tpublic string " + this.GetColumnName(GeneColumns[i]) + "String { get; set; }");
+			Response.WriteLine("");
+			p++;
+		}
+	}
+}
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+
+public string ReturnObjectName()
+{
+	string stable = this.TargetPrefix + this.getConvertTableName(SourceTable);
+	return stable;
+}
+</script>

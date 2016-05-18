@@ -1,0 +1,3 @@
+﻿5906,CBOTBOND_CONTRACT MASTER,jp.co.okasan.pr.cbo.cbo5906.Cbo5906Frame,1
+8906,CBOTBOND_CONTRACT HELPER,jp.co.okasan.pr.hlp.hlp8906.Hlp8906Frame,1
+

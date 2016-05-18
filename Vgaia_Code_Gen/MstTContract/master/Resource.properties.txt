@@ -1,0 +1,41 @@
+﻿# Hlp6032Panel
+Hlp6032Panel_lblId = Id
+Hlp6032Panel_lblDelCd = Del Cd
+Hlp6032Panel_lblContractNo = Contract No
+Hlp6032Panel_lblContractTypeId = Contract Type Id
+Hlp6032Panel_lblContractName = Contract Name
+Hlp6032Panel_lblCompany = Company
+Hlp6032Panel_lblTel = Tel
+Hlp6032Panel_lblAddress = Address
+Hlp6032Panel_lblRepresentName = Represent Name
+Hlp6032Panel_lblRepresentId = Represent Id
+Hlp6032Panel_lblContractDate = Contract Date
+Hlp6032Panel_lblFinishDate = Finish Date
+Hlp6032Panel_lblTransactionCd = Transaction Cd
+Hlp6032Panel_lblRemarks = Remarks
+Hlp6032Panel_lblStatus = Status
+Hlp6032Panel_lblRegDateTime = Reg Date Time
+Hlp6032Panel_lblRegUserId = Reg User Id
+Hlp6032Panel_lblUpdDateTime = Upd Date Time
+Hlp6032Panel_lblUpdUserId = Upd User Id
+
+# Mst3032Panel
+Mst3032Panel_lblId = Id
+Mst3032Panel_lblDelCd = Del Cd
+Mst3032Panel_lblContractNo = Contract No
+Mst3032Panel_lblContractTypeId = Contract Type Id
+Mst3032Panel_lblContractName = Contract Name
+Mst3032Panel_lblCompany = Company
+Mst3032Panel_lblTel = Tel
+Mst3032Panel_lblAddress = Address
+Mst3032Panel_lblRepresentName = Represent Name
+Mst3032Panel_lblRepresentId = Represent Id
+Mst3032Panel_lblContractDate = Contract Date
+Mst3032Panel_lblFinishDate = Finish Date
+Mst3032Panel_lblTransactionCd = Transaction Cd
+Mst3032Panel_lblRemarks = Remarks
+Mst3032Panel_lblStatus = Status
+Mst3032Panel_lblRegDateTime = Reg Date Time
+Mst3032Panel_lblRegUserId = Reg User Id
+Mst3032Panel_lblUpdDateTime = Upd Date Time
+Mst3032Panel_lblUpdUserId = Upd User Id

@@ -1,0 +1,130 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="FinderCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="UpdaterCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Huan.Nguyen Van" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="Package" Category="1. Context" Description="Author kage" %>
+<%@ Property Name="Prefix" Type="System.String" Default="Pkg" Category="1. Context" Description="Prefix " %>
+<%@ Property Name="EntityName" Type="System.String" Default="EntityName" Category="1. Context" Description="Name of entity" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\..\..\\include\\GolineUtilities.inc" -->
+/*
+ * Copyright(C) 2012 Okasan Information Systems Co.,Ltd. All rights reserved.
+ */
+package jp.co.okasan.business.<%=this.Package%>.<%=this.Prefix.ToLower()%><%=this.UpdaterCode%>;
+
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.util.List;
+
+import jp.co.okasan.cmn.base.BaseContext;
+import jp.co.okasan.data.<%=this.EntityName%>;
+import jp.co.okasan.data.BaseUser;
+
+/**
+ * <%=this.Prefix%><%=this.UpdaterCode%>Context Class's Description. <br>
+ * 
+ * @author: <%=Author%> <%=this.GetCurrentDate()%> Create New
+ */
+public class <%=this.Prefix%><%=this.UpdaterCode%>Context extends BaseContext<<%=this.EntityName%>> {
+
+	////////// Class Variables //////////
+	
+	/** data list */
+	private List<<%=this.EntityName%>> dataList;
+	
+	/** Current data */
+	private <%=this.EntityName%> currentData;
+	
+	/** Update counter */
+	private int updateResult;
+	
+	/**
+	 * Constructor. <br>
+	 * 
+	 * @param Nothing
+	 * @exception Nothing
+	 */
+	public <%=this.Prefix%><%=this.UpdaterCode%>Context(BaseUser user, Connection connection) {
+		super(user, connection);
+	}
+	
+	/**
+	 * @return the dataList
+	 */
+	public List<<%=this.EntityName%>> getDataList() {
+		return dataList;
+	}
+
+	/**
+	 * @param dataList the dataList to set
+	 */
+	public void setDataList(List<<%=this.EntityName%>> dataList) {
+		this.dataList = dataList;
+	}
+	
+	/**
+	 * @return the currentData
+	 */
+	public <%=this.EntityName%> getCurrentData() {
+		return currentData;
+	}
+
+	/**
+	 * @param currentData the currentData to set
+	 */
+	public void setCurrentData(<%=this.EntityName%> currentData) {
+		this.currentData = currentData;
+	}
+	
+	/**
+	 * @return the updateResult
+	 */
+	public int getUpdateResult() {
+		return updateResult;
+	}
+
+	/**
+	 * @param updateResult the updateResult to set
+	 */
+	public void setUpdateResult(int updateResult) {
+		this.updateResult = updateResult;
+	}
+}
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

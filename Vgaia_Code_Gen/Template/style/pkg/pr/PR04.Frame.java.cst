@@ -1,0 +1,177 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="HelpFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="PackageFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Goline Coporation" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="mst" Category="1. Context" Description="Author kage" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\\..\\..\\include\\GolineUtilities.inc" -->
+/*
+ * Copyright(C) 2012 Okasan Information Systems Co.,Ltd. All rights reserved.
+ */
+package jp.co.okasan.pr.<%=Package%>.<%=Package%><%=PackageFormCode%>;
+
+import java.awt.Dimension;
+import java.util.HashMap;
+
+import jp.co.nec.frw0000.cm.data.Frw00HeaderData;
+import jp.co.nec.frw0000.pr.util.Frw00BusinessState;
+import jp.co.nec.frw0000.pr.util.Frw00BusinessStateManager;
+import jp.co.nec.frw0000.pr.util.Frw00StateMap;
+import jp.co.nec.frw0000.pr.view.Frw00BaseTemplateFrame;
+import jp.co.nec.frw0000.pr.view.Frw00ClientPanel;
+
+import jp.co.okasan.cmn.ConstantValues;
+
+/**
+ * <%=this.GetFrameName(this.Package, this.PackageFormCode)%> Class's Description <br>
+ * <P>
+ * <%=this.GetTableDescription(this.SourceTable)%> class: insert, update, delete
+ * </p>
+ * 
+ * @author: <%=this.Author%> <%=this.GetCurrentDate()%> Create New
+ */
+public class <%=this.GetFrameName(this.Package, this.PackageFormCode)%> extends Frw00BaseTemplateFrame implements ConstantValues {
+	
+	////////// Methods define //////////
+	
+	/**
+     * Constructor <br>
+	 * Call Constructor base template.
+     * 
+     * @param Nothing
+     * @exception Nothing
+     */
+	public <%=this.GetFrameName(this.Package, this.PackageFormCode)%>() {
+        super();
+    }
+
+	/**
+     * Constructor <br>
+	 * Call Constructor base template.
+     * 
+     * @param data HashMap client area data
+     * @param businessId String 
+     * @exception Nothing
+     */
+    public <%=this.GetFrameName(this.Package, this.PackageFormCode)%>(HashMap data, String businessId) {
+        super(data, businessId);
+    }
+	
+	/**
+     * Initialize the size of window<br>
+     * 
+     * @param Nothing
+     * @return Dimension the initial size of window
+     * @exception Nothing
+     */
+    public Dimension getInitialSize() {
+        Dimension initialWindowSize = new Dimension(UPD_INI_WIDTH, UPD_INI_HEIGHT);
+        return initialWindowSize;
+    }
+	
+	/**
+     * The maximum size of window Size. <br>
+     * 
+     * @param Nothing
+     * @return Dimension the maximum size of window
+     * @exception Nothing
+     */
+    public Dimension getMaximumSize() {
+        Dimension maxWindowSize = new Dimension(UPD_MAX_WIDTH, UPD_MAX_HEIGHT);
+        return maxWindowSize;
+    }
+	
+	/**
+     * The minimum size of window Size. <br>
+     * 
+     * @param Nothing
+     * @return Dimension the minimum size of window
+     * @exception Nothing
+     */
+    public Dimension getMinimumSize() {
+        Dimension minWindowSize = new Dimension(UPD_MIN_WIDTH, UPD_MIN_HEIGHT);
+        return minWindowSize;
+    }
+	
+	/**
+     * Define states of the business. <br>
+	 * Define: <br>
+     * Imput state(<%=this.GetInputName(this.Package, this.PackageFormCode)%>)
+     * Change input state(<%=this.GetChangeInputName(this.Package, this.PackageFormCode)%>)
+     * Confirm state(<%=this.GetConfirmName(this.Package, this.PackageFormCode)%>))
+     * Result state(<%=this.GetResultName(this.Package, this.PackageFormCode)%>)
+     * 
+     * @param stateMap Frw00BusinessStateManager Window state management class
+     * @return Frw00BusinessStateManager Window state management class
+     * @exception Nothing
+     */
+    protected Frw00BusinessStateManager createBusinessState(Frw00BusinessStateManager stateMap) {
+		stateMap.addBusinessState(new <%=this.GetInputName(this.Package, this.PackageFormCode)%>());
+		stateMap.addBusinessState(new <%=this.GetChangeInputName(this.Package, this.PackageFormCode)%>());
+		stateMap.addBusinessState(new <%=this.GetConfirmName(this.Package, this.PackageFormCode)%>());
+		stateMap.addBusinessState(new <%=this.GetResultName(this.Package, this.PackageFormCode)%>());
+	
+		return stateMap;
+	}
+	
+	/**
+     * Create default client area. <br>
+     * 
+     * @param Nothing
+     * @return Frw00ClientPanel Created client area
+     * @exception Nothing
+     */
+    protected Frw00ClientPanel createDefaultClientPanel() {
+    	showDatetime();
+        return new <%=this.GetPanelName(this.Package, this.PackageFormCode)%>();
+    }
+	
+	/**
+     * Return the default window state. <br>
+     * 
+     * @param stateMap Frw00StateMap Window state management class
+     * @return Frw00BusinessState the first window class that was define in Frw00StateMap
+     * @exception Nothing
+     */	
+    protected Frw00BusinessState getDefaultBusinessState(Frw00StateMap stateMap) {
+        return stateMap.getBusinessState(Frw00HeaderData.WNDSTAT_INPUT);
+    }
+}
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

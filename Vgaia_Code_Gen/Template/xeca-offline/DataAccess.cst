@@ -1,0 +1,252 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="FinderCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="UpdaterCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Huan.Nguyen Van" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="Package" Category="1. Context" Description="Author kage" %>
+<%@ Property Name="Prefix" Type="System.String" Default="Pkg" Category="1. Context" Description="Prefix " %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\include\GolineUtilities.inc" -->
+/*
+ * Copyright(C) 2014 Goline Information Systems Co.,Ltd. All rights reserved.
+ * 
+ */
+using System;
+using System.Collections.Generic;
+using System.Data.SQLite;
+using System.Linq;
+using System.Text;
+using Xeca.Business.domain;
+using Xeca.Common;
+
+<%int index = 1; %>
+<%int count = 1;%>
+
+namespace Xeca.DAO
+{
+	public class <%=getTableClassName(this.SourceTable)%>Dao
+    {
+		/// <summary>
+		/// Get New Instance
+		/// </summary>
+		public static <%=getTableClassName(this.SourceTable)%>Dao Current
+		{
+			get
+			{
+				return new <%=getTableClassName(this.SourceTable)%>Dao();
+			}
+		}
+		
+		/// <summary>
+        /// Create <%=getTableClassName(this.SourceTable)%>
+        /// </summary>
+        /// <param name="obj"></param>
+        public void <%=getTableClassName(this.SourceTable)%>_Create(UserBack user, <%=getTableClassName(this.SourceTable)%> obj)
+		{
+			StringBuilder sb = new StringBuilder();
+            List<SQLiteParameter> paramList = new List<SQLiteParameter>();
+			
+			sb.Append(" INSERT INTO <%=this.SourceTable.Name%> VALUES");
+            sb.Append(" (");
+            <%foreach ( ColumnSchema col in SourceTable.Columns ){%>
+			sb.Append(" 	@<%=col.Name%><%if(index < SourceTable.Columns.Count){%>,<%}%>");
+			<% index ++;}%>
+            sb.Append(" )");
+			
+			<%foreach ( ColumnSchema col in SourceTable.Columns ){%>
+			paramList.Add(new SQLiteParameter { ParameterName = "@<%=col.Name%>", DbType = <%=GetSqliteColumnDataType(col)%>, Value = obj.<%=this.GetColumnNameParam(col)%> });
+			<% }%>
+			
+			SQLiteUtils.Current.ExecSqlCommand(sb.ToString(), paramList);
+		}
+		
+		/// <summary>
+        /// Update <%=getTableClassName(this.SourceTable)%>
+        /// </summary>
+        /// <param name="obj"></param>
+        public void <%=getTableClassName(this.SourceTable)%>_Update(UserBack user, <%=getTableClassName(this.SourceTable)%> obj)
+        {
+			<% index = 1; %>
+			<% count = 0; %>
+			StringBuilder sb = new StringBuilder();
+            List<SQLiteParameter> paramList = new List<SQLiteParameter>();
+
+            sb.Append(" UPDATE <%=this.SourceTable.Name%>");
+            sb.Append(" SET");
+			<%foreach ( ColumnSchema col in SourceTable.NonPrimaryKeyColumns ){ count++;%>
+			<%if(col.Name == "REG_DATE_TIME" || col.Name == "REG_USER_ID"){ continue ;}%>
+			sb.Append(" 	<%=col.Name%> = @<%=col.Name%><%if(count < SourceTable.NonPrimaryKeyColumns.Count){%>,<%}%>");
+			<% index ++;}%>
+			<% index =1;count =0;%>
+			sb.Append(" WHERE");
+			<%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){%>
+			sb.Append("	<%if(index > 1){%>AND<%}%> <%=col.Name%> = @<%=col.Name%> ");
+			<%index++;}%>
+		
+			<% index =1;count =0;%>
+			<%foreach ( ColumnSchema col in SourceTable.NonPrimaryKeyColumns ){%>
+			<%if(col.Name == "REG_DATE_TIME" || col.Name == "REG_USER_ID"){ continue ;}%>
+			paramList.Add(new SQLiteParameter { ParameterName = "@<%=col.Name%>", DbType = <%=GetSqliteColumnDataType(col)%>, Value = obj.<%=this.GetColumnNameParam(col)%> });
+			<% index ++;}%>
+			<% index =1;count =0;%>
+			<%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){%>
+			paramList.Add(new SQLiteParameter { ParameterName = "@<%=col.Name%>", DbType = <%=GetSqliteColumnDataType(col)%>, Value = obj.<%=this.GetColumnNameParam(col)%> });
+			<% index ++;}%>
+			
+			SQLiteUtils.Current.ExecSqlCommand(sb.ToString(), paramList);
+		}
+		
+		<% index =1;count =0;%>
+		/// <summary>
+        /// Delete <%=getTableClassName(this.SourceTable)%>
+        /// </summary>
+        /// <param name="id"></param>
+        public void <%=getTableClassName(this.SourceTable)%>_Delete(UserBack user, <%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){ count++;%><%= this.GetCShapColumnDataType(col)%> <%=this.GetColumnNameParam(col)%><%if(count < SourceTable.PrimaryKey.MemberColumns.Count){%>, <%}%><%}%>)
+        {
+			StringBuilder sb = new StringBuilder();
+            List<SQLiteParameter> paramList = new List<SQLiteParameter>();
+
+            sb.Append(" DELETE FROM <%=this.SourceTable.Name%>");
+            sb.Append(" WHERE");
+			<% index =1;count =0;%>
+			<%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){%>
+			sb.Append("	<%if(index > 1){%>AND<%}%> <%=col.Name%> = @<%=col.Name%> ");
+			<%index++;}%>
+			
+			<% index =1;count =0;%>
+			<%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){%>
+			paramList.Add(new SQLiteParameter { ParameterName = "@<%=col.Name%>", DbType = <%=GetSqliteColumnDataType(col)%>, Value = <%=this.GetColumnNameParam(col)%> });
+			<% index ++;}%>
+			
+			SQLiteUtils.Current.ExecSqlCommand(sb.ToString(), paramList);
+		}
+		
+		/// <summary>
+        /// Get <%=getTableClassName(this.SourceTable)%> by PK
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public <%=getTableClassName(this.SourceTable)%> <%=getTableClassName(this.SourceTable)%>_Get(UserBack user, <%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){count++;%><%= this.GetCShapColumnDataType(col)%> <%=this.GetColumnNameParam(col)%><%if(count < SourceTable.PrimaryKey.MemberColumns.Count){%>, <%}%><%}%>)
+        {
+			<%=getTableClassName(this.SourceTable)%> obj = null;
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append(" SELECT * FROM <%=this.SourceTable.Name%>");
+             sb.Append(" WHERE");
+			<% index =1;count =0;%>
+			<%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){%>
+			sb.Append("	<%if(index > 1){%>AND<%}%> <%=col.Name%> = @<%=col.Name%> ");
+			<%index++;}%>
+			
+			using (SQLiteConnection conn = new SQLiteConnection(SQLiteUtils.DataSoure))
+            {
+                conn.Open();
+
+                using (SQLiteCommand cmd = new SQLiteCommand(conn))
+                {
+                    cmd.CommandText = sb.ToString();
+					<% index =1;count =0;%>
+					<%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){%>
+					cmd.Parameters.Add("@<%=col.Name%>", <%=GetSqliteColumnDataType(col)%>).Value = <%=this.GetColumnNameParam(col)%>;
+					<% index ++;}%>
+
+                    using (SQLiteDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+							obj = new <%=getTableClassName(this.SourceTable)%>();
+							
+							<%foreach(ColumnSchema col in SourceTable.Columns){%>
+							obj.<%=this.GetColumnNameParam(col)%> = <%=GetStringValue(col, "reader")%><%count ++;%>
+							<%}%>
+						}
+					}
+				}
+				
+				conn.Close();
+			}
+			
+			return obj;
+		}
+		
+		/// <summary>
+        /// Get List <%=getTableClassName(this.SourceTable)%>
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public List<<%=getTableClassName(this.SourceTable)%>> <%=getTableClassName(this.SourceTable)%>_GetList(UserBack user, <%=getTableClassName(this.SourceTable)%> filter)
+        {
+			List<<%=getTableClassName(this.SourceTable)%>> list = new List<<%=getTableClassName(this.SourceTable)%>>();
+            <%=getTableClassName(this.SourceTable)%> obj = null;
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append(" SELECT * FROM <%=this.SourceTable.Name%>");
+			
+			using (SQLiteConnection conn = new SQLiteConnection(SQLiteUtils.DataSoure))
+            {
+                conn.Open();
+
+                using (SQLiteCommand cmd = new SQLiteCommand(conn))
+                {
+                    cmd.CommandText = sb.ToString();
+
+                    using (SQLiteDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+							obj = new <%=getTableClassName(this.SourceTable)%>();
+							
+							<%foreach(ColumnSchema col in SourceTable.Columns){%>
+							obj.<%=this.GetColumnNameParam(col)%> = <%=GetStringValue(col, "reader")%><%count ++;%>
+							<%}%>
+							
+							list.Add(obj);
+						}
+					}
+				}
+				
+				conn.Close();
+			}
+			
+			return list;
+		}
+	}
+}
+	
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

@@ -1,0 +1,157 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="FormName" Type="System.String" Default="1000" Category="1. Context" Description="Form name" %>
+<%@ Property Name="UpdaterCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Huan.Nguyen Van" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="Package" Category="1. Context" Description="Author kage" %>
+<%@ Property Name="Prefix" Type="System.String" Default="Pkg" Category="1. Context" Description="Prefix " %>
+<%@ Property Name="EntityName" Type="System.String" Default="EntityName" Category="1. Context" Description="Name of entity" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\include\GolineUtilities.inc" -->
+<%int count = 0;%>
+<%string paramList = "";%>
+<%string paramAndTypeList = "";%>
+<%foreach ( ColumnSchema col in SourceTable.NonPrimaryKeyColumns ){%>
+	<%if(!this.isSpecialColumn(col)){%>
+		<% paramAndTypeList += string.Format("{0} {1}, ", this.GetFrontColumnDataType(col), this.GetColumnNameParam(col));%>
+		<% paramList += string.Format("{0}, ", this.GetColumnNameParam(col));%>
+	<%}%>
+<%}%>
+<%if(!string.IsNullOrEmpty(paramList)){%>
+	<%paramList = paramList.Trim();%>
+	<%paramList = paramList.Substring(0, paramList.Length - 1);%>
+<%}%>
+<%if(!string.IsNullOrEmpty(paramAndTypeList)){%>
+	<%paramAndTypeList = paramAndTypeList.Trim();%>
+	<%paramAndTypeList = paramAndTypeList.Substring(0, paramAndTypeList.Length - 1);%>
+<%}%>
+
+	@RemoteMethod
+	public DwrResponseModel create<%=this.EntityName%>(<%=paramAndTypeList%>) throws Exception {
+		DwrResponseModel _response = new DwrResponseModel();
+		_response.setStatusCode(Const.COMMON.STATUSCODE_FAILED);
+
+		try{
+			// Get user from session
+			User user = this.getMember();
+			
+			// do create object
+			<%=this.EntityName%> obj = adminService.create<%=this.EntityName%>(user, <%=paramList%>);
+			
+			// Set to response data
+			_response.setData(obj);
+			_response.setStatusCode(Const.COMMON.STATUSCODE_SUCCESS);
+		} catch (ApplicationException e) {
+			setAppError(_response, e);
+		} catch (Exception e) {
+			setSystemError(_response, e);
+		}
+		
+		return _response;
+	}
+	
+	@RemoteMethod
+	public DwrResponseModel delete<%=this.EntityName%>(BigDecimal id, Date updDateTime) throws Exception {
+		DwrResponseModel _response = new DwrResponseModel();
+		_response.setStatusCode(Const.COMMON.STATUSCODE_FAILED);
+
+		try{
+			// Get user from session
+			User user = this.getMember();
+			
+			// Do delete
+			adminService.delete<%=this.EntityName%>(user, id, updDateTime);
+
+			_response.setStatusCode(Const.COMMON.STATUSCODE_SUCCESS);
+		} catch (ApplicationException e) {
+			setAppError(_response, e);
+		} catch (Exception e) {
+			setSystemError(_response, e);
+		}
+		
+		return _response;
+	}
+	
+	@RemoteMethod
+	public DwrResponseModel update<%=this.EntityName%>(BigDecimal id, <%=paramAndTypeList%>, Date updDateTime) throws Exception {
+		DwrResponseModel _response = new DwrResponseModel();
+		_response.setStatusCode(Const.COMMON.STATUSCODE_FAILED);
+
+		try{
+			// Get user from session
+			User user = this.getMember();
+			<%=this.EntityName%> data = adminService.update<%=this.EntityName%>(user, id, <%=paramList%>, updDateTime);
+			
+			// Set to response data
+			_response.setData(data);
+			_response.setStatusCode(Const.COMMON.STATUSCODE_SUCCESS);
+		} catch (ApplicationException e) {
+			setAppError(_response, e);
+		} catch (Exception e) {
+			setSystemError(_response, e);
+		}
+		
+		return _response;
+	}
+	
+	@RemoteMethod
+	public DwrResponseModel find<%=this.EntityName%>() throws Exception {
+		DwrResponseModel _response = new DwrResponseModel();
+		_response.setStatusCode(Const.COMMON.STATUSCODE_FAILED);
+
+		try{
+			// Get user from session
+			User user = this.getMember();
+			
+			// Search from database
+			List<<%=this.EntityName%>> data = adminService.find<%=this.EntityName%>(user);
+			
+			// Add to response
+			_response.setData(data);
+			_response.setStatusCode(Const.COMMON.STATUSCODE_SUCCESS);
+		} catch (ApplicationException e) {
+			setAppError(_response, e);
+		} catch (Exception e) {
+			setSystemError(_response, e);
+		}
+		
+		return _response;
+	}
+		
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

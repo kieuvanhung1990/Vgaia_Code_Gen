@@ -1,0 +1,660 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%-- Context --%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="FinderCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="UpdaterCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Huan.Nguyen Van" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="Package" Category="1. Context" Description="Author kage" %>
+<%@ Property Name="Prefix" Type="System.String" Default="Pkg" Category="1. Context" Description="Prefix " %>
+<%@ Property Name="EntityName" Type="System.String" Default="EntityName" Category="1. Context" Description="Name of entity" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Property Name="GeneratePath" Type="System.String" Default="C:\Goline\" Category="2. Options" Description="Path to gen" %>		
+<%@ Property Name="DeleteOldData" Type="System.Boolean" Default="false" Category="2. Options" Description="Delete Old Data.." %>	
+	
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<%@ Import Namespace="System.Text" %>
+<%@ Import Namespace="System.Collections.Generic" %>
+<!-- #include file="include\\GolineUtilities.inc" -->
+
+<%ClearOldData();%>
+<%Gen();%>
+Success!
+<script runat="template">
+public void Gen()
+{
+	StreamWriter sw;
+	string filePath;
+	string categoryDir;
+	CodeTemplate template = null;
+	
+	#region common
+	categoryDir = string.Format(@"{0}\front\{1}\04.common", GetGenPath(), this.GetTablename(this.SourceTable));
+	if (!Directory.Exists(categoryDir))
+	{
+		Directory.CreateDirectory(categoryDir);
+	}
+	ClearFolder(categoryDir);
+	//CmnBean.cst
+	template = CreateTemplate("front\\CmnBean.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\Bean.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	
+	//CmnService.cst
+	template = CreateTemplate("front\\CmnService.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\Service.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//Cmn_Client.cst
+	template = CreateTemplate("front\\Cmn_Client.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}Client.java", categoryDir, this.EntityName);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	#endregion
+	
+	#region Finder
+	categoryDir = string.Format(@"{0}\front\{1}\03.business\{2}\{3}{4}", GetGenPath(), this.GetTablename(this.SourceTable), this.Package, this.Prefix.ToLower(), this.FinderCode);
+	if (!Directory.Exists(categoryDir))
+	{
+		Directory.CreateDirectory(categoryDir);
+	}
+	ClearFolder(categoryDir);
+	//fd01.Context.cst
+	template = CreateTemplate("front\\business\\finder\\fd01.Context.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}{2}Context.java", categoryDir, this.Prefix, this.FinderCode);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//fd02.Finder.cst
+	template = CreateTemplate("front\\business\\finder\\fd02.Finder.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}Finder.java", categoryDir, this.EntityName);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//fd03.Control.cst
+	template = CreateTemplate("front\\business\\finder\\fd03.Control.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}{2}Control.java", categoryDir, this.Prefix, this.FinderCode);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S1Initial.java.cst
+	template = CreateTemplate("front\\business\\finder\\S1Initial.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S1Initial.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S2InputDataCheck.java.cst
+	template = CreateTemplate("front\\business\\finder\\S2InputDataCheck.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S2InputDataCheck.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S3TableReadCheck.java.cst
+	template = CreateTemplate("front\\business\\finder\\S3TableReadCheck.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S3TableReadCheck.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S4DataFind.java.cst
+	template = CreateTemplate("front\\business\\finder\\S4DataFind.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S4DataFind.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S5ScreenDataEdit.java.cst
+	template = CreateTemplate("front\\business\\finder\\S5ScreenDataEdit.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S5ScreenDataEdit.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S7End.java.cst
+	template = CreateTemplate("front\\business\\finder\\S7End.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S7End.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	#endregion
+	
+	#region Updater
+	
+	categoryDir = string.Format(@"{0}\front\{1}\03.business\{2}\{3}{4}", GetGenPath(), this.GetTablename(this.SourceTable), this.Package, this.Prefix.ToLower(), this.UpdaterCode);
+	if (!Directory.Exists(categoryDir))
+	{
+		Directory.CreateDirectory(categoryDir);
+	}
+	ClearFolder(categoryDir);
+	//S1Initial.java.cst
+	template = CreateTemplate("front\\business\\updater\\S1Initial.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S1Initial.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S2InputDataCheck.java.cst
+	template = CreateTemplate("front\\business\\updater\\S2InputDataCheck.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S2InputDataCheck.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S2InputKeyCheck.java.cst
+	template = CreateTemplate("front\\business\\updater\\S2InputKeyCheck.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S2InputKeyCheck.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S3DataExist.java.cst
+	template = CreateTemplate("front\\business\\updater\\S3DataExist.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S3DataExist.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S3DataNotExist.java.cst
+	template = CreateTemplate("front\\business\\updater\\S3DataNotExist.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S3DataNotExist.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S3TableReadCheck.java.cst
+	template = CreateTemplate("front\\business\\updater\\S3TableReadCheck.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S3TableReadCheck.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S4DataDelete.java.cst
+	template = CreateTemplate("front\\business\\updater\\S4DataDelete.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S4DataDelete.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S4DataEditor.java.cst
+	template = CreateTemplate("front\\business\\updater\\S4DataEditor.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S4DataEditor.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S4DataEntry.java.cst
+	template = CreateTemplate("front\\business\\updater\\S4DataEntry.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S4DataEntry.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S4DataFind.java.cst
+	template = CreateTemplate("front\\business\\updater\\S4DataFind.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S4DataFind.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S4DataUpdate.java.cst
+	template = CreateTemplate("front\\business\\updater\\S4DataUpdate.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S4DataUpdate.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S5ScreenDataEdit.java.cst
+	template = CreateTemplate("front\\business\\updater\\S5ScreenDataEdit.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S5ScreenDataEdit.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//S7End.java.cst
+	template = CreateTemplate("front\\business\\updater\\S7End.java.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\S7End.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//ud01.Context.cst
+	template = CreateTemplate("front\\business\\updater\\ud01.Context.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}{2}Context.java", categoryDir, this.Prefix, this.UpdaterCode);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//ud04.Control.cst
+	template = CreateTemplate("front\\business\\updater\\ud04.Control.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}{2}Control.java", categoryDir, this.Prefix, this.UpdaterCode);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	#endregion
+	
+	#region Dao
+	categoryDir = string.Format(@"{0}\front\{1}\02.dao\{2}", GetGenPath(), this.GetTablename(this.SourceTable), this.Package);
+	if (!Directory.Exists(categoryDir))
+	{
+		Directory.CreateDirectory(categoryDir);
+	}
+	ClearFolder(categoryDir);
+	
+	
+	//Cmn_Finder.cst
+	template = CreateTemplate("front\\dao\\Cmn_Finder.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}Finder.java", categoryDir, this.EntityName);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8); 
+	
+	//Cmn_Updater.cst
+	template = CreateTemplate("front\\dao\\Cmn_Updater.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}Updater.java", categoryDir, this.EntityName);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8); 
+	
+	//EntryConst.cst
+	template = CreateTemplate("front\\dao\\EntryConst.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}Const.java", categoryDir, this.EntityName);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8); 
+	#endregion
+	
+	#region Data
+	categoryDir = string.Format(@"{0}\front\{1}\01.data", GetGenPath(), this.GetTablename(this.SourceTable));
+	if (!Directory.Exists(categoryDir))
+	{
+		Directory.CreateDirectory(categoryDir);
+	}
+	ClearFolder(categoryDir);
+	
+	//EntryConst.cst
+	template = CreateTemplate("front\\data\\Entity.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FinderCode", this.FinderCode);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}.java", categoryDir, this.EntityName);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8); 
+	#endregion
+}
+
+public CodeTemplate CreateTemplate(string templatefile)
+{
+	CodeTemplateCompiler compiler = new CodeTemplateCompiler(templatefile);
+	compiler.Compile();		
+	if (compiler.Errors.Count == 0)
+	{
+		return compiler.CreateInstance();
+	}
+	else
+	{
+		for (int i = 0; i < compiler.Errors.Count; i++)
+		{
+			Response.WriteLine(compiler.Errors[i].ToString());
+		}
+		return null;
+	}		
+}
+
+public static StreamWriter GetSW(string path)
+{
+	StreamWriter sw = new StreamWriter(path, true, Encoding.UTF8);
+	return sw;
+}
+
+public void ClearOldData()
+{
+	if(DeleteOldData)
+	{
+ 		DirectoryInfo di = new DirectoryInfo(GetGenPath());
+		foreach (DirectoryInfo directory in di.GetDirectories())
+		{
+			foreach (FileInfo fileInfo in directory.GetFiles())
+			{
+				fileInfo.Delete();
+			}
+		}
+	}
+}
+
+public void ClearFolder(string path)
+{
+	DirectoryInfo di = new DirectoryInfo(path);
+	foreach (FileInfo fileInfo in di.GetFiles())
+	{
+			fileInfo.Delete();
+			File.Delete(fileInfo.FullName);
+	}
+		
+	foreach (DirectoryInfo directory in di.GetDirectories())
+	{
+		foreach (FileInfo fileInfo in directory.GetFiles())
+		{
+			fileInfo.Delete();
+			File.Delete(fileInfo.FullName);
+		}
+		
+		directory.Delete();
+		Directory.Delete(directory.FullName);
+	}
+	
+	
+}
+
+public string GetGenPath()
+{
+	if (string.IsNullOrEmpty(GeneratePath))
+	{
+		throw new Exception("Khong xac dinh duoc GenereatePath");
+	}
+	
+	string path = GeneratePath;
+	
+	if (!path.EndsWith(@"\"))
+	{
+		path += @"\";
+	}
+	
+	path += "okasan";
+	
+	if (!Directory.Exists(path))
+	{
+		Directory.CreateDirectory(path);
+	}
+	
+	return path;
+}
+
+public string ReturnObjectClass(string sobject)
+{
+	Dictionary<string, string> dict = new Dictionary<string, string>();
+	string stable = sobject;
+	return stable;
+}
+</script>

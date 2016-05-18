@@ -1,0 +1,276 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="HelpFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="PackageFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Goline Coporation" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="mst" Category="1. Context" Description="Author kage" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\\..\\..\\include\\GolineUtilities.inc" -->
+/*
+ * Copyright(C) 2012 Okasan Information Systems Co.,Ltd. All rights reserved.
+ */
+package jp.co.okasan.cm.<%=Package%>.<%=Package%><%=PackageFormCode%>;
+
+import java.util.HashMap;
+
+import jp.co.okasan.cmn.CommonHelper;
+import jp.co.okasan.cmn.ItemValidator;
+
+/**
+* <%=this.PackageFormCode%><%=PackageFormCode%>Row data for grid. <br>
+* <p>
+*  Row data class of <%=this.GetTableDescription(this.SourceTable)%>.
+* </p>
+* Set and Get data of screen component.
+*
+* @author: <%=Author%> <%=this.GetCurrentDate()%> Create New
+*/
+public class <%=this.GetRowDataName(Package, PackageFormCode)%>  {
+	
+	////////// Class Variables //////////
+	
+	/** Selection Column */
+	public static final int SelectionCol = 0;
+
+	/** UpdateFlag Column */
+	public static final int UpdateFlagCol = 1;
+
+	/** ErrorFlag Column */
+	public static final int ErrorFlagCol = 2;
+
+	/** TimeStamp Column */
+	public static final int TimeStampCol = 3;
+	
+	<%foreach ( ColumnSchema col in SourceTable.Columns ){%>
+	/** <%=this.GetColumnDescription(col)%> Column */
+	public static final int <%=this.GetColumnName(col)%>Col = 4;
+	
+	<%}%>
+	
+	/** Column total */
+	public static final int ColTotal = 8;
+	
+	/** selection */
+	private Boolean select;
+	
+	/** Update Flag */
+	private String updateFlg;
+	
+	/** ErrorFlag */
+	private String errorFlag;
+	
+	/** Hidden Update DateTime */
+	private String timeStamp;
+	
+	<%foreach ( ColumnSchema col in SourceTable.Columns ){%>
+	/** <%=this.GetColumnDescription(col)%> */
+	private String <%=this.GetColumnNameParam(col)%>;
+	
+	<%}%>
+	
+	
+	
+	////////// Class Methods //////////
+	
+	/**
+	 * Get RowData from Row data in Table
+	 * 
+	 * @return <%=this.GetRowDataName(Package, PackageFormCode)%>
+	 */
+	public static <%=this.GetRowDataName(Package, PackageFormCode)%> get<%=this.GetRowDataName(Package, PackageFormCode)%>(Object[] row) {
+		<%=this.GetRowDataName(Package, PackageFormCode)%> obj = new <%=this.GetRowDataName(Package, PackageFormCode)%>();
+		
+		if (row[SelectionCol] != null) {
+			obj.setSelect(Boolean.valueOf(row[SelectionCol].toString()));
+		}
+		
+		obj.setUpdateFlg(CommonHelper.getStringFromObject(row[UpdateFlagCol]));
+		obj.setErrorFlag(CommonHelper.getStringFromObject(row[ErrorFlagCol]));
+		obj.setTimeStamp(CommonHelper.getStringFromObject(row[TimeStampCol]));
+
+		<%foreach ( ColumnSchema col in SourceTable.Columns ){%>
+		obj.set<%=this.GetColumnName(col)%>(CommonHelper.getStringFromObject(row[<%=this.GetColumnName(col)%>Col]));
+		<%}%>
+
+		return obj;
+	}
+
+	/**
+	 * Get HashMap from Row data in Table
+	 * 
+	 * @return HashMap<String, Object>
+	 */
+	public HashMap<String, Object> get<%=this.GetRowDataName(Package, PackageFormCode)%>HashMap() {
+
+		HashMap<String, Object> hashMap = new HashMap<>();
+
+		hashMap.put(String.valueOf(SelectionCol), this.select);
+
+		if (this.getUpdateFlg() != null) {
+			hashMap.put(String.valueOf(UpdateFlagCol), this.getUpdateFlg());
+		}
+
+		if (this.getTimeStamp() != null) {
+			hashMap.put(String.valueOf(TimeStampCol), this.getTimeStamp());
+		}
+
+		if (ItemValidator.isNotEmpty(this.getId())) {
+			hashMap.put(String.valueOf(IdCol), this.getId());
+		}
+
+		<%foreach ( ColumnSchema col in SourceTable.Columns ){%>
+		hashMap.put(String.valueOf(<%=this.GetColumnName(col)%>Col), this.get<%=this.GetColumnName(col)%>());
+		<%}%>
+
+		return hashMap;
+	}
+	
+	
+	/**
+	 * @return the select
+	 */
+	public Boolean getSelect() {
+		return select;
+	}
+
+	/**
+	 * @param select
+	 *            the select to set
+	 */
+	public void setSelect(Boolean select) {
+		this.select = select;
+	}
+	
+	
+	/**
+	 * @return the errorFlag
+	 */
+	public String getErrorFlag() {
+		return errorFlag;
+	}
+
+	/**
+	 * @param errorFlag
+	 *            the errorFlag to set
+	 */
+	public void setErrorFlag(String errorFlag) {
+		this.errorFlag = errorFlag;
+	}
+
+	/**
+	 * @return the updateFlg
+	 */
+	public String getUpdateFlg() {
+		return updateFlg;
+	}
+
+	/**
+	 * @param updateFlg
+	 *            the updateFlg to set
+	 */
+	public void setUpdateFlg(String updateFlg) {
+		this.updateFlg = updateFlg;
+	}
+	
+	<%foreach(ColumnSchema col in SourceTable.Columns){%>
+	/**
+	 * <%=this.GetColumnDescription(col)%> 
+	 * @param Nothing
+	 * @return String <%=this.GetColumnDescription(col)%>
+	 * @exception Nothing
+	 */
+	public String get<%=this.GetColumnName(col)%>() {
+		return <%=this.GetColumnNameParam(col)%>;
+	}
+	
+	<%}%>
+	
+	<%foreach(ColumnSchema col in SourceTable.Columns){%>
+	/**
+	 * <%=this.GetColumnDescription(col)%>
+	 * @param <%=this.GetColumnNameParam(col)%> String <%=this.GetColumnDescription(col)%>
+	 * @exception Nothing
+	 */
+	public void set<%=this.GetColumnName(col)%>(String <%=this.GetColumnNameParam(col)%>) {
+		this.<%=this.GetColumnNameParam(col)%> = <%=this.GetColumnNameParam(col)%>;
+	}
+	
+	<%}%>
+	/**
+     * Get timeStamp
+     * @param Nothing
+     * @return String timeStamp
+     * @exception
+     */
+    public String getTimeStamp() {
+        return timeStamp;
+    }
+    
+    /**
+     * Set timeStamp 
+     * @param String timeStamp
+     * @exception Nothing
+     */
+    public void setTimeStamp(String timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+	
+	
+	/**
+     * Return data input infomation for management purpose. <br>
+	 *
+     * @param Nothing
+     * @return String data input infomation
+     * @exception Nothing
+     */
+	public String toString() {
+		StringBuffer inputData = new StringBuffer(super.toString());
+		<%foreach(ColumnSchema col in SourceTable.Columns){%>
+		inputData.append(",<%=this.GetColumnNameParam(col)%>=");
+		inputData.append(<%=this.GetColumnNameParam(col)%>);
+		<%}%>
+		
+		return inputData.toString();
+	}
+}
+
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+
+
+
+</script>

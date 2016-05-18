@@ -1,0 +1,350 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%-- Context --%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="FormName" Type="System.String" Default="1000" Category="1. Context" Description="Form name" %>
+<%@ Property Name="UpdaterCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Huan.Nguyen Van" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="Package" Category="1. Context" Description="Author kage" %>
+<%@ Property Name="Prefix" Type="System.String" Default="Pkg" Category="1. Context" Description="Prefix " %>
+<%@ Property Name="EntityName" Type="System.String" Default="EntityName" Category="1. Context" Description="Name of entity" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Property Name="GeneratePath" Type="System.String" Default="C:\Goline\" Category="2. Options" Description="Path to gen" %>		
+<%@ Property Name="DeleteOldData" Type="System.Boolean" Default="false" Category="2. Options" Description="Delete Old Data.." %>	
+	
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<%@ Import Namespace="System.Text" %>
+<%@ Import Namespace="System.Collections.Generic" %>
+<!-- #include file="include\\GolineUtilities.inc" -->
+
+<%ClearOldData();%>
+<%Gen();%>
+Success!
+<script runat="template">
+public void Gen()
+{
+	StreamWriter sw;
+	string filePath;
+	string categoryDir;
+	CodeTemplate template = null;
+	
+	#region Back
+	categoryDir = string.Format(@"{0}\yazo\{1}\back", GetGenPath(), this.GetTablename(this.SourceTable));
+	if (!Directory.Exists(categoryDir))
+	{
+		Directory.CreateDirectory(categoryDir);
+	}
+	ClearFolder(categoryDir);
+	
+	//Form_Controller.cst
+	template = CreateTemplate("yazo\\Form_Controller.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FormName", this.FormName);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}Controller.java", categoryDir, this.EntityName);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	
+	//Form_CSS.cst
+	template = CreateTemplate("yazo\\Form_CSS.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FormName", this.FormName);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}.css", categoryDir, this.FormName);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//Form_JS.cst
+	template = CreateTemplate("yazo\\Form_JS.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FormName", this.FormName);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}.js", categoryDir, this.FormName);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//Form_JSP.cst
+	template = CreateTemplate("yazo\\Form_JSP.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FormName", this.FormName);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}.jsp", categoryDir, this.FormName);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//Form_Messsage.cst
+	template = CreateTemplate("yazo\\Form_Messsage.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FormName", this.FormName);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\message.txt", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//Form_RM.cst
+	template = CreateTemplate("yazo\\Form_RM.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FormName", this.FormName);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\OTClientMethod.txt", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//IfServcie.cst
+	template = CreateTemplate("yazo\\IfServcie.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FormName", this.FormName);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\IfService.txt", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//ServcieImpl.cst
+	template = CreateTemplate("yazo\\ServcieImpl.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FormName", this.FormName);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\ServiceImpl.txt", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//ValidateService.cst
+	template = CreateTemplate("yazo\\ValidateService.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FormName", this.FormName);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\ValidateService.txt", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	
+	#endregion
+	
+	#region DAO
+	categoryDir = string.Format(@"{0}\yazo\{1}\dao", GetGenPath(), this.GetTablename(this.SourceTable));
+	if (!Directory.Exists(categoryDir))
+	{
+		Directory.CreateDirectory(categoryDir);
+	}
+	ClearFolder(categoryDir);
+	
+	//Entity.cst
+	template = CreateTemplate("yazo\\Entity.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FormName", this.FormName);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\{1}.java", categoryDir, this.EntityName);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//DataAccess.cst
+	template = CreateTemplate("yazo\\DataAccess.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FormName", this.FormName);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\DataAccess.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	
+	//IfDataAccess.cst
+	template = CreateTemplate("yazo\\IfDataAccess.cst");
+	template.SetProperty("SourceTable", SourceTable);
+	template.SetProperty("FormName", this.FormName);
+	template.SetProperty("UpdaterCode",this.UpdaterCode);
+	template.SetProperty("EntityName",this.EntityName);
+	template.SetProperty("Package",Package);
+	template.SetProperty("Prefix",this.Prefix);
+	template.SetProperty("Author",Author);
+	filePath = string.Format(@"{0}\IfDataAccess.java", categoryDir);
+	sw = GetSW(filePath);
+	template.Render(sw);
+	sw.Close();
+	Response.WriteLine(string.Format("Genrator file {0} ", filePath), true, Encoding.UTF8);
+	#endregion
+}
+
+public CodeTemplate CreateTemplate(string templatefile)
+{
+	CodeTemplateCompiler compiler = new CodeTemplateCompiler(templatefile);
+	compiler.Compile();		
+	if (compiler.Errors.Count == 0)
+	{
+		return compiler.CreateInstance();
+	}
+	else
+	{
+		for (int i = 0; i < compiler.Errors.Count; i++)
+		{
+			Response.WriteLine(compiler.Errors[i].ToString());
+		}
+		return null;
+	}		
+}
+
+public static StreamWriter GetSW(string path)
+{
+	StreamWriter sw = new StreamWriter(path, true, Encoding.UTF8);
+	return sw;
+}
+
+public void ClearOldData()
+{
+	if(DeleteOldData)
+	{
+ 		DirectoryInfo di = new DirectoryInfo(GetGenPath());
+		foreach (DirectoryInfo directory in di.GetDirectories())
+		{
+			foreach (FileInfo fileInfo in directory.GetFiles())
+			{
+				fileInfo.Delete();
+			}
+		}
+	}
+}
+
+public void ClearFolder(string path)
+{
+	DirectoryInfo di = new DirectoryInfo(path);
+	foreach (FileInfo fileInfo in di.GetFiles())
+	{
+			fileInfo.Delete();
+			File.Delete(fileInfo.FullName);
+	}
+		
+	foreach (DirectoryInfo directory in di.GetDirectories())
+	{
+		foreach (FileInfo fileInfo in directory.GetFiles())
+		{
+			fileInfo.Delete();
+			File.Delete(fileInfo.FullName);
+		}
+		
+		directory.Delete();
+		Directory.Delete(directory.FullName);
+	}
+	
+	
+}
+
+public string GetGenPath()
+{
+	if (string.IsNullOrEmpty(GeneratePath))
+	{
+		throw new Exception("Khong xac dinh duoc GenereatePath");
+	}
+	
+	string path = GeneratePath;
+	
+	if (!path.EndsWith(@"\"))
+	{
+		path += @"\";
+	}
+	
+	path += "okasan";
+	
+	if (!Directory.Exists(path))
+	{
+		Directory.CreateDirectory(path);
+	}
+	
+	return path;
+}
+
+public string ReturnObjectClass(string sobject)
+{
+	Dictionary<string, string> dict = new Dictionary<string, string>();
+	string stable = sobject;
+	return stable;
+}
+</script>

@@ -1,0 +1,177 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="HelpFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="PackageFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Goline Coporation" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="mst" Category="1. Context" Description="Author kage" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\\..\\..\\include\\GolineUtilities.inc" -->
+/*
+ * Copyright(C) 2012 Okasan Information Systems Co.,Ltd. All rights reserved.
+ */
+package jp.co.okasan.ap.<%=Package%>.<%=Package%><%=PackageFormCode%>;
+
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+
+import jp.co.nec.com0000.ap.Context;
+import jp.co.nec.com0000.ap.IStage;
+import jp.co.nec.frw0000.ap.Frw00InstanceFactory;
+import jp.co.nec.frw0000.cm.logging.Frw00Logger;
+
+import jp.co.okasan.dao.<%=this.GetTablename(this.SourceTable)%>Data;
+import jp.co.okasan.cm.<%=Package%>.<%=Package%><%=PackageFormCode%>.<%=this.GetInputDataName(this.Package, this.PackageFormCode)%>;
+import jp.co.okasan.cm.<%=Package%>.<%=Package%><%=PackageFormCode%>.<%=this.GetResultDataName(this.Package, this.PackageFormCode)%>;
+
+/**
+ * S5ScreenDataEdit Class's Description. <br>
+ * 
+ * @author: <%=this.Author%> <%=this.GetCurrentDate()%> Create New
+ */
+public class S5ScreenDataEdit implements IStage {
+
+	////////// Class Variables //////////
+	
+	/** Class name of initial stage */
+	private static final String CLASS_NAME = S5ScreenDataEdit.class.getName();
+
+	/** Method name of initial stage */
+	private static final String METHOD_NAME = "doTask";
+	
+	////////// Class Constructor //////////
+	
+	/**
+	 * Constructor Method <br>
+	 * 
+	 * @param Nothing
+	 * @exception Nothing
+	 */
+	public S5ScreenDataEdit() {
+	}
+	
+	////////// Class Methods //////////
+	
+	/**
+	 * Create business route. <br>
+	 * 
+	 * @param factory Frw00InstanceFactory instance of Factory
+	 * @exception Nothing
+	 */
+	public void create(Frw00InstanceFactory factory) {
+	}
+	
+	/**
+	 * Process Screen Data Edit task <br>
+	 * 
+	 * @param ctx Context the contextual of <%=this.GetTableDescription(this.SourceTable)%>
+	 * @return boolean dotask state
+	 * @exception SQLException
+	 * @exception Frw00BlockadeException when table is blockade
+	 */
+	public boolean doTask(Context ctx) throws SQLException {
+		final Frw00Logger logger = ctx.getLogger();
+		logger.writeTrace(CLASS_NAME, METHOD_NAME, "enter");
+
+		// Edit screen data
+		editScreenData(ctx);
+
+		logger.writeTrace(CLASS_NAME, METHOD_NAME, "exit");
+		return true;
+	}
+	
+	/**
+	 * Method edit screen data <br>
+	 * 
+	 * @param ctx Context the contextual of <%=this.GetTableDescription(this.SourceTable)%>
+	 * @exception Nothing
+	 */
+	private void editScreenData(Context ctx) {
+		<%=this.GetContextName(this.Package, this.PackageFormCode)%> context = (<%=this.GetContextName(this.Package, this.PackageFormCode)%>) ctx;
+		<%=this.GetResultDataName(this.Package, this.PackageFormCode)%> resultData = context.getResultData();
+
+		// Get Action mode
+		final String actionMode = context.getInputData().getActionMode();
+
+		// Mode
+		resultData.setActionMode(actionMode);
+		
+		// Get current data from context
+		<%=this.GetTablename(this.SourceTable)%>Data currentData = context.getCurrentData();
+
+		<%foreach(ColumnSchema col in this.SourceTable.Columns){%>
+		<%if(col.Name == "DEL_CD" || col.Name == "REG_DATE_TIME" || col.Name == "REG_USER_ID" || col.Name == "UPD_DATE_TIME" || col.Name == "UPD_USER_ID") continue;%>
+		
+		// Set <%=this.GetColumnDescription(col)%>
+		<%if(this.ColumnIsString(col)){%>
+		resultData.set<%=this.GetColumnName(col)%>(currentData.get<%=this.GetColumnName(col)%>());
+		<%}else{%>
+		if(currentData.get<%=this.GetColumnName(col)%>() == null){
+			resultData.set<%=this.GetColumnName(col)%>("");
+		}else{
+			resultData.set<%=this.GetColumnName(col)%>(currentData.get<%=this.GetColumnName(col)%>().toString());
+		}
+		<%}%>
+		<%}%>
+	
+		// Registered Date Time
+		if (currentData.getRegDateTime() != null) {
+			resultData.setRegDateTime(new SimpleDateFormat("MM/dd/yy HH:mm")
+					.format(currentData.getRegDateTime()));
+		} else {
+			resultData.setRegDateTime("");
+		}
+
+		// Registered User Id
+		resultData.setRegUserId(currentData.getRegUserId());
+
+		// Updated Date Time
+		if (currentData.getUpdDateTime() != null) {
+			resultData.setUpdDateTime(new SimpleDateFormat("MM/dd/yy HH:mm")
+					.format(currentData.getUpdDateTime()));
+			resultData.setTimeStamp(currentData.getUpdDateTime().toString());
+		} else {
+			resultData.setUpdDateTime("");
+			resultData.setTimeStamp("");
+		}
+
+		// Updated User Id
+		resultData.setUpdUserId(currentData.getUpdUserId());
+	}
+}
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

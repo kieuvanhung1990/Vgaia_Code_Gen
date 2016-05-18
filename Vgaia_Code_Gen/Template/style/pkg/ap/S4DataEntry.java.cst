@@ -1,0 +1,194 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="HelpFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="PackageFormCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Goline Coporation" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="mst" Category="1. Context" Description="Author kage" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\\..\\..\\include\\GolineUtilities.inc" -->
+/*
+ * Copyright(C) 2012 Okasan Information Systems Co.,Ltd. All rights reserved.
+ */
+package jp.co.okasan.ap.<%=Package%>.<%=Package%><%=PackageFormCode%>;
+
+import java.sql.SQLException;
+import java.sql.Timestamp;
+
+import jp.co.nec.com0000.ap.Com00UserError;
+import jp.co.nec.com0000.ap.Context;
+import jp.co.nec.com0000.ap.IStage;
+import jp.co.nec.frw0000.ap.Frw00BlockadeException;
+import jp.co.nec.frw0000.ap.Frw00InstanceFactory;
+import jp.co.nec.frw0000.cm.logging.Frw00Logger;
+
+import jp.co.okasan.cmn.CommonFunction;
+import jp.co.okasan.cmn.ConstantValues;
+import jp.co.okasan.dao.<%=this.GetTablename(this.SourceTable)%>Data;
+import jp.co.okasan.cm.cmn.PRData;
+import jp.co.okasan.cm.<%=Package%>.<%=Package%><%=PackageFormCode%>.<%=this.GetInputDataName(this.Package, this.PackageFormCode)%>;
+
+/**
+ * S4DataEntry class's Description. <br>
+ * 
+ * @author: <%=this.Author%> <%=this.GetCurrentDate()%> Create New
+ */
+public class S4DataEntry implements IStage {
+	
+	////////// Class Variables //////////
+	
+	/** Class name of initial stage */
+	private static final String CLASS_NAME = S4DataEntry.class.getName();
+
+	/** Method name of initial stage */
+	private static final String METHOD_NAME = "doTask";
+	
+	/** Declare data updater */
+	private <%=this.GetTablename(this.SourceTable)%>Updater dataUpdater;
+
+	/** Declare entry data */
+	private <%=this.GetTablename(this.SourceTable)%>Data entryData;
+	
+	////////// Class Constructor //////////
+	
+	/**
+	 * Constructor. <br>
+	 * 
+	 * @param Nothing
+	 * @exception Nothing
+	 */
+	public S4DataEntry() {
+	}
+	
+	////////// Class Methods //////////
+	
+	/**
+	 * Create business route. <br>
+	 * 
+	 * @param factory Frw00InstanceFactory instance of Factory
+	 * @exception Nothing
+	 */
+	public void create(Frw00InstanceFactory factory) {
+	
+		// Init data updater
+		dataUpdater = (<%=this.GetTablename(this.SourceTable)%>Updater) factory
+				.getInstance(<%=this.GetTablename(this.SourceTable)%>Updater.class);
+	}
+	
+	/**
+	 * Process Data Entry task <br>
+	 * 
+	 * @param ctx Context the contextual of <%=this.GetTableDescription(this.SourceTable)%>
+	 * @return boolean dotask state
+	 * @exception SQLException
+	 * @exception Frw00BlockadeException when table is blockade
+	 */
+	public boolean doTask(Context ctx) throws SQLException,Frw00BlockadeException {
+		final Frw00Logger logger = ctx.getLogger();
+		logger.writeTrace(CLASS_NAME, METHOD_NAME, "enter");
+        entryData = new <%=this.GetTablename(this.SourceTable)%>Data();
+
+		// Get entry data
+		getEntryData(ctx);
+
+		// Entry data
+		entryData(ctx);
+
+		// Set entry data
+		setDataAfterEntry(ctx);
+
+		logger.writeTrace(CLASS_NAME, METHOD_NAME, "exit");
+		return true;
+	}
+	
+	/**
+	 * Get entry data <BR>
+	 * 
+	 * @param ctx
+	 *            Context
+     * @exception Nothing
+	 */
+	private void getEntryData(Context ctx) {
+		entryData = ((<%=this.GetContextName(this.Package, this.PackageFormCode)%>) ctx).getCurrentData();
+	}
+	
+	/**
+	 * Process insert data <BR>
+	 * 
+	 * @param ctx Context the contextual of <%=this.GetTableDescription(this.SourceTable)%>
+	 * @exception SQLException
+	 * @exception Frw00BlockadeException when table is blockade
+	 */
+	private void entryData(Context ctx) throws SQLException,
+			Frw00BlockadeException {
+		<%=this.GetInputDataName(this.Package, this.PackageFormCode)%> inputData = ((<%=this.GetContextName(this.Package, this.PackageFormCode)%>) ctx).getInputData();
+		
+		// Get Base PR data
+		PRData prData = inputData.getPrData();
+
+		// Set DEL code
+		entryData.setDelCd(ConstantValues.NOT_DEL);
+
+		// Set User to entry data
+		entryData.setRegUserId(prData.getUserId());
+		entryData.setUpdUserId(prData.getUserId());
+
+		// get Timestamp
+		Timestamp entryDateTime = CommonFunction.getTimeStamp();
+
+		entryData.setRegDateTime(entryDateTime);
+		entryData.setUpdDateTime(entryDateTime);
+		
+		// Insert into DB
+		dataUpdater.insertIntoTable(entryData);
+	}
+	
+	/**
+	 * Process data after insert record data. <br>
+	 * 
+	 * @param ctx Context the contextual of <%=this.GetTableDescription(this.SourceTable)%>
+	 * @exception Nothing
+	 */
+	private void setDataAfterEntry(Context ctx) {
+		// Get context
+		<%=this.GetContextName(this.Package, this.PackageFormCode)%> context = (<%=this.GetContextName(this.Package, this.PackageFormCode)%>) ctx;
+		context.setCurrentData(entryData);
+	}
+}
+
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

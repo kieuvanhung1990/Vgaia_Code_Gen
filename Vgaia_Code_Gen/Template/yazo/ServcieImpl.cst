@@ -1,0 +1,174 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="FinderCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="UpdaterCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Huan.Nguyen Van" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="Package" Category="1. Context" Description="Author kage" %>
+<%@ Property Name="Prefix" Type="System.String" Default="Pkg" Category="1. Context" Description="Prefix " %>
+<%@ Property Name="EntityName" Type="System.String" Default="EntityName" Category="1. Context" Description="Name of entity" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\include\GolineUtilities.inc" -->
+/*
+ * Copyright(C) 2016 Goline Information Systems Co.,Ltd. All rights reserved.
+ * 
+ */
+package yazo.vn.dao;
+
+import java.sql.SQLException;
+import java.util.List;
+
+import yazo.vn.domain.<%=this.EntityName%>;
+import yazo.vn.domain.User;
+
+<%int index = 1; %>
+<%int count = 1;%>
+
+/**
+ * <%=this.EntityName%>Updater class's Description <BR>
+ *
+ * @author: <%=Author%> <%=this.GetCurrentDate()%> Create new
+ */
+public class <%=this.EntityName%>Impl extends BaseServiceImpl implements If<%=this.EntityName%> {
+
+	@Autowired IfCommonDao commonDao;
+	@Autowired If<%=this.EntityName%>Dao dao;
+		
+	
+	@Transactional
+	@Override
+	public <%=this.EntityName%> create<%=this.EntityName%>(User user<%foreach (ColumnSchema col in SourceTable.NonPrimaryKeyColumns ){%><%if(!this.isSpecialColumn(col)){%>, <%=this.GetFrontColumnDataType(col)%> <%=this.GetColumnNameParam(col)%><% }}%>)
+			throws ApplicationException, Exception{
+			
+		<%=this.EntityName%> data = DataUtils.init<%=this.EntityName%>(user<%foreach (ColumnSchema col in SourceTable.NonPrimaryKeyColumns ){%><%if(!isSpecialColumn(col)){%>, <%=this.GetColumnNameParam(col)%><% }}%>);
+		
+		// Validate data
+		DataUtils.validate<%=this.EntityName%>(data);
+		
+		// Create next sequence
+		data.setId(commonDao.getNextSystemSequence(user, Const.TableNames.<%=this.SourceTable.Name%>));
+		data.setRegDateTime(CommonFuntion.getDate());
+		data.setRegUserId(user.getUserName());
+		data.setUpdDateTime(CommonFuntion.getDate());
+		data.setUpdUserId(user.getUserName());
+		
+		// Insert into database
+		dao.create<%=this.EntityName%>(user, data);
+		
+		// Return result
+		return data;
+	}
+	
+	@Transactional
+	@Override
+	public <%=this.EntityName%> update<%=this.EntityName%>(User user, BigDecimal id<%foreach (ColumnSchema col in SourceTable.NonPrimaryKeyColumns ){%><%if(!this.isSpecialColumn(col)){%>, <%=this.GetFrontColumnDataType(col)%> <%=this.GetColumnNameParam(col)%><% }}%>, Date updDateTime)
+			throws ApplicationException, Exception{
+			
+		<%=this.EntityName%> data = DataUtils.init<%=this.EntityName%>(user<%foreach (ColumnSchema col in SourceTable.NonPrimaryKeyColumns ){%><%if(!isSpecialColumn(col)){%>, <%=this.GetColumnNameParam(col)%><% }}%>);
+		
+		// Validate data
+		DataUtils.validate<%=this.EntityName%>(data);
+		
+		// Get old data
+		<%=this.EntityName%> filter = new <%=this.EntityName%>();
+		filter.setId(id);
+		List<<%=this.EntityName%>> list = dao.find<%=this.EntityName%>(user, filter);
+		if(list == null || list.isEmpty()){
+			throw new ApplicationException("Data not found");
+		}
+		
+		// Check old data
+		<%=this.EntityName%> old = list.get(0);
+		if(old.getUpdDateTime().compareTo(updDateTime) != 0){
+			throw new ApplicationException("Data is changed, please refresh and try again!");
+		}
+		
+		data.setRegDateTime(CommonFuntion.getDate());
+		data.setRegUserId(user.getUserName());
+		data.setUpdDateTime(CommonFuntion.getDate());
+		data.setUpdUserId(user.getUserName());
+		
+		// Insert into database
+		dao.update<%=this.EntityName%>(user, data);
+		
+		// Return result
+		return data;
+	}
+	
+	@Transactional
+	@Override
+	public int delete<%=this.EntityName%>(User user, BigDecimal id, Date updDateTime)
+			throws ApplicationException, Exception{
+		
+		// Get old data
+		<%=this.EntityName%> filter = new <%=this.EntityName%>();
+		filter.setId(id);
+		
+		List<<%=this.EntityName%>> list = dao.find<%=this.EntityName%>(user, filter);
+		if(list == null || list.isEmpty()){
+			throw new ApplicationException("Data not found");
+		}
+		
+		// Check old data
+		<%=this.EntityName%> data = list.get(0);
+		if(data.getUpdDateTime().compareTo(updDateTime) != 0){
+			throw new ApplicationException("Data is changed, please refresh and try again!");
+		}
+		
+		data.setStatus(new BigDecimal(9));
+		data.setRegDateTime(CommonFuntion.getDate());
+		data.setRegUserId(user.getUserName());
+		data.setUpdDateTime(CommonFuntion.getDate());
+		data.setUpdUserId(user.getUserName());
+		
+		// Insert into database
+		return dao.update<%=this.EntityName%>(user, data);
+	}
+	
+	@Override
+	public List<<%=this.EntityName%>> find<%=this.EntityName%>(User user)
+			throws ApplicationException, Exception{
+					
+		// Check old data
+		<%=this.EntityName%> filter = new <%=this.EntityName%>();
+				
+		// Return result
+		return dao.find<%=this.EntityName%>(user, filter);
+	}
+}		
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>

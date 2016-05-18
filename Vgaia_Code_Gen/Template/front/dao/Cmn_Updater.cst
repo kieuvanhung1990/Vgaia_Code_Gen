@@ -1,0 +1,236 @@
+<%-- 
+Name:
+Author: 
+Description: 
+--%>
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SourceTable" Type="SchemaExplorer.TableSchema" Category="1. Context"
+	Description="Table that the stored procedures should be based on." %>	
+
+<%@ Property Name="FinderCode" Type="System.String" Default="1000" Category="1. Context" Description="Help Form Code" %>
+<%@ Property Name="UpdaterCode" Type="System.String" Default="1000" Category="1. Context" Description="Package Form Code" %>
+
+<%@ Property Name="Author" Type="System.String" Default="Huan.Nguyen Van" Category="1. Context" Description="Author" %>
+<%@ Property Name="Package" Type="System.String" Default="Package" Category="1. Context" Description="Author kage" %>
+<%@ Property Name="Prefix" Type="System.String" Default="Pkg" Category="1. Context" Description="Prefix " %>
+<%@ Property Name="EntityName" Type="System.String" Default="EntityName" Category="1. Context" Description="Name of entity" %>
+
+<%@ CodeTemplate Language="C#" TargetLanguage="Text" Src="" Inherits="" Debug="False" Description="Template description here." %>
+<%@ Property Name="SampleStringProperty" Type="System.String" Default="SomeValue" Optional="True" Category="Strings" Description="This is a sample string property." %>
+<%@ Property Name="SampleBooleanProperty" Type="System.Boolean" Default="True" Optional="False" Category="Booleans" Description="This is a sample boolean property." %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+
+<%@ Assembly Name="System.Data" %>
+<%@ Import Namespace="System.Data" %>
+<%-- Assembly References --%>
+<%@ Assembly Name="SchemaExplorer" %>
+<%@ Assembly Name="CodeSmith.BaseTemplates" %>
+<%@ Assembly Name="CodeSmith.CustomProperties" %>
+<%@ Assembly Name="System.Data" %>
+<%-- Namespace Imports --%>
+<%@ Import Namespace="SchemaExplorer" %>
+<%@ Import Namespace="CodeSmith.CustomProperties" %>
+<%@ Import Namespace="CodeSmith.BaseTemplates" %>
+<%@ Import Namespace="System.Data" %>
+<%@ Import Namespace="System.Text.RegularExpressions" %>
+<%@ Import Namespace="System.IO" %>
+<!-- #include file="..\..\include\GolineUtilities.inc" -->
+/*
+ * Copyright(C) 2012 Okasan Information Systems Co.,Ltd. All rights reserved.
+ * 
+ */
+package jp.co.okasan.dao.<%=this.Package%>;
+
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.List;
+
+import oracle.jdbc.OracleTypes;
+
+import jp.co.okasan.cmn.UserException;
+import jp.co.okasan.cmn.base.dao.BaseDaoUpdater;
+import jp.co.okasan.cmn.base.dao.MultiValueSqlParam;
+import jp.co.okasan.data.<%=this.EntityName%>;
+import jp.co.okasan.data.BaseUser;
+
+/**
+ * <%=this.EntityName%>Updater class's Description <BR>
+ *
+ * @author: <%=Author%> <%=this.GetCurrentDate()%> Create new
+ */
+public class <%=this.EntityName%>Updater extends BaseDaoUpdater<<%=this.EntityName%>> implements
+		<%=this.EntityName%>Const {
+	
+	public <%=this.EntityName%> findDataForUpdate(BaseUser user,
+			<%foreach(ColumnSchema column in SourceTable.PrimaryKey.MemberColumns){%>
+			<%=this.GetColumnDataType(column)%> <%=this.GetColumnNameParam(column)%>, <%}%> Connection conn) throws SQLException, UserException{
+		
+		<%int count = 1;%>
+		StringBuffer sb = new StringBuffer();
+		sb.append("SELECT ");
+		<%foreach ( ColumnSchema col in SourceTable.Columns ){%>sb.append(" t.<%=col.Name%><%if(count < SourceTable.Columns.Count){%>,<%}%>");
+		<%count ++;} %>sb.append(" FROM <%=this.SourceTable.Name%> t");
+		sb.append(" WHERE ");
+		<% count = 0;%>
+		<%foreach(ColumnSchema column in SourceTable.PrimaryKey.MemberColumns){count++;%>
+		sb.append(" <%if(count > 1){%>AND<%}%>	t.<%=column.Name%> =?");
+		<%}%>
+		
+		String sql = sb.toString();
+		MultiValueSqlParam param = new MultiValueSqlParam();
+		int paramIndex = 1;
+		<%int index = 1; %>
+		<%foreach(ColumnSchema column in SourceTable.PrimaryKey.MemberColumns){%>
+		param.addParam(paramIndex++, <%=this.GetOracleDataType(column)%>, <%=this.GetColumnNameParam(column)%>);
+		<%index++;}%>
+		
+		return selectForUpdate(sql, param, conn);
+	}
+	
+	/**
+	 * Method insert an record in to table <br>
+	 * 
+	 * @param user BaseUser current User
+	 * @param data <%=this.EntityName%>
+	 * @param conn Connection
+	 * @throws SQLException 
+	 * @throws UserException
+	 */
+	public int insertData(BaseUser user, <%=this.EntityName%> data, Connection conn)
+			throws SQLException, UserException {
+		<% index = 1; %>
+
+		StringBuffer sb = new StringBuffer();
+		
+		sb.append(" INSERT INTO <%=this.SourceTable.Name%>");
+		sb.append(" (");
+		<%foreach ( ColumnSchema col in SourceTable.Columns ){%>
+		sb.append(" 	<%=col.Name%> <%if(index < SourceTable.Columns.Count){%>,<%}%>");
+		<% index ++;}%>
+		sb.append(" )");<% index =1;%>
+		sb.append(" VALUES (<%foreach ( ColumnSchema col in SourceTable.Columns ){%>? <%if(index < SourceTable.Columns.Count){%>,<%}%><%index ++;}%>)");
+		
+		String sql = sb.toString();
+		MultiValueSqlParam param = new MultiValueSqlParam();
+		int paramIndex=1;
+		<% index =1;%>
+		<%foreach ( ColumnSchema col in SourceTable.Columns ){%>
+		param.addParam(paramIndex++, <%=this.GetOracleDataType(col)%>, data.get<%=this.GetColumnName(col)%>());
+		<% index ++;}%>
+		
+		return this.update(sql, param, conn);
+	}
+
+	/**
+	 * Method update an record from table <br>
+	 * 
+	 * @param user BaseUser current User
+	 * @param data <%=this.EntityName%>
+	 * @param conn Connection
+	 * @throws SQLException 
+	 * @throws UserException
+	 */
+	public int updateData(BaseUser user, <%=this.EntityName%> data,
+			Connection conn) throws SQLException, UserException{
+		<%index = 1; %>
+		<%count = 0; %>
+
+		StringBuffer sb = new StringBuffer();
+		
+		sb.append(" UPDATE <%=this.SourceTable.Name%>");
+		sb.append(" SET");
+		<%foreach ( ColumnSchema col in SourceTable.NonPrimaryKeyColumns ){ count++;%>
+		<%if(col.Name == "REG_DATE_TIME" || col.Name == "REG_USER_ID"){ continue ;}%>
+		sb.append(" 	<%=col.Name%> = ?<%if(count < SourceTable.NonPrimaryKeyColumns.Count){%>,<%}%>");
+		<% index ++;}%>
+		<% index =1;count =0;%>
+		sb.append(" WHERE");
+		<%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){%>
+		sb.append("	<%if(index > 1){%>AND<%}%> <%=col.Name%> = ? ");
+		<%index++;}%>
+		
+		String sql = sb.toString();
+		MultiValueSqlParam param = new MultiValueSqlParam();
+		int paramIndex = 1;
+		<% index =1;count =0;%>
+		<%foreach ( ColumnSchema col in SourceTable.NonPrimaryKeyColumns ){%>
+		<%if(col.Name == "REG_DATE_TIME" || col.Name == "REG_USER_ID"){ continue ;}%>
+		param.addParam(paramIndex++, <%=this.GetOracleDataType(col)%>, data.get<%=this.GetColumnName(col)%>());
+		<% index ++;}%>
+		<%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){%>
+		param.addParam(paramIndex++, <%=this.GetOracleDataType(col)%>, data.get<%=this.GetColumnName(col)%>());
+		<% index ++;}%>
+		
+		return this.update(sql, param, conn);
+	}
+	
+	/**
+	 * Method delete an record from table <br>
+	 * 
+	 * @param user BaseUser current User
+	 * @param data <%=this.EntityName%>
+	 * @param conn Connection
+	 * @throws SQLException
+	 * @throws UserException
+	 */
+	public int deleteData(BaseUser user, <%=this.EntityName%> data, Connection conn) throws SQLException, UserException{
+		StringBuffer sb = new StringBuffer();
+
+		sb.append(" DELETE <%=this.SourceTable.Name%>");
+		sb.append(" WHERE");
+		<% index =1;count =0;%>
+		<%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){%>
+		sb.append("	<%if(index > 1){%>AND<%}%> <%=col.Name%> = ? ");
+		<%index++;}%>
+
+		String sql = sb.toString();
+		MultiValueSqlParam param = new MultiValueSqlParam();
+		int paramIndex = 1;
+		<% index =1;count =0;%>
+		<%foreach ( ColumnSchema col in SourceTable.PrimaryKey.MemberColumns ){%>
+		param.addParam(paramIndex++, <%=this.GetOracleDataType(col)%>, data.get<%=this.GetColumnName(col)%>());
+		<% index ++;}%>
+
+		return this.update(sql, param, conn);
+	}
+
+	@Override
+	protected <%=this.EntityName%> getData(ResultSet resultset) throws SQLException {
+		<%=this.EntityName%> data = new <%=this.EntityName%>();
+		// Create result set metadata
+		ResultSetMetaData rsmd = resultset.getMetaData();
+
+		int index = 1;
+		// Get column count
+		int columnCount = rsmd.getColumnCount();
+		while (index <= columnCount) {
+			String columnName = rsmd.getColumnName(index);
+			switch (columnName) {
+			<%foreach( ColumnSchema col in SourceTable.Columns){%>
+			case <%=col.Name%>:
+				data.set<%=this.GetColumnName(col)%>(resultset.get<%=this.GetColumnDataType(col)%>(<%=col.Name%>));
+				break;
+			
+			<%}%>
+			default:
+				break;
+			}
+
+			index++;
+		}
+		return data;
+	}
+}		
+<script runat="template">
+// My methods here.
+
+public string SampleMethod()
+{
+	return "Method output.";
+}
+</script>
